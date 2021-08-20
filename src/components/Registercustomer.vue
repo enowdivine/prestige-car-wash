@@ -1,0 +1,104 @@
+<template>
+  <v-tabs centered color="rgb(109, 199, 109)">
+    <v-tab>Registered Clients</v-tab>
+    <v-tab>Guest Clients</v-tab>
+    <v-tab-item>
+      <v-form>
+        <v-text-field
+          color="rgb(109, 199, 109)"
+          v-model="name"
+          outlined
+          label="Name"
+          required
+        ></v-text-field>
+
+        <v-text-field
+          color="rgb(109, 199, 109)"
+          v-model="email"
+          outlined
+          label="Email"
+          required
+        ></v-text-field>
+
+        <v-select 
+          :items="services"
+          label="Required Service"
+          outlined
+          color="rgb(109, 199, 109)"
+        ></v-select>
+
+        <v-btn block color="rgb(109, 199, 109)" dark>Submit</v-btn>
+      </v-form>
+    </v-tab-item>
+
+    <v-tab-item>
+      <v-form>
+        <v-text-field
+          color="rgb(109, 199, 109)"
+          v-model="name"
+          outlined
+          label="Name"
+          required
+        ></v-text-field>
+        <v-text-field
+          color="rgb(109, 199, 109)"
+          v-model="contact"
+          outlined
+          label="Contact"
+          required
+        ></v-text-field>
+        <v-text-field
+          color="rgb(109, 199, 109)"
+          v-model="address"
+          outlined
+          label="Adress"
+          required
+        ></v-text-field>
+        <v-select
+          :items="services"
+          label="Required Service"
+          outlined
+          color="rgb(109, 199, 109)"
+        ></v-select>
+        
+
+        <v-btn block color="rgb(109, 199, 109)" dark>Submit</v-btn>
+      </v-form>
+    </v-tab-item>
+  </v-tabs>
+</template>
+
+<script>
+export default {
+  data: () => ({
+    services: [
+      "Classic wash",
+      "Engine Detailing",
+      "Headlights Restoration",
+      "Air Vents Stream Cleaning",
+      "Carpet Detailing",
+      "Chair Detailing",
+      "Safety Belt Cleaning",
+      "Radiator Flushing",
+      "Chassis/Undercarriage Pressure Cleaning",
+      "Tyre and Wheel Drum Shinning",
+      "Car Polishing, Waxing and Stain Renoval",
+      "Fill Detailing",
+    ],
+    gender: ["Male", "Female"],
+    cars: ["Mercedes", "Infinity"],
+  }),
+};
+</script>
+
+<style scoped>
+.v-form {
+  border-radius: 5px;
+  width: 60%;
+  margin: 20px auto;
+}
+
+.v-btn {
+  margin-bottom: 30px;
+}
+</style>
