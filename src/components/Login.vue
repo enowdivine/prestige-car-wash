@@ -13,13 +13,14 @@
             <v-text-field
               color="rgb(109, 199, 109)"
               label="Email"
+              v-model="user.email"
               :rules="[rules.required, rules.email]"
               outlined
             ></v-text-field>
 
             <v-text-field
               color="rgb(109, 199, 109)"
-              v-model="password"
+              v-model="user.password"
               :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
               :rules="[rules.required, rules.min]"
               :type="show1 ? 'text' : 'password'"
@@ -30,7 +31,12 @@
               @click:append="show1 = !show1"
               outlined
             ></v-text-field>
-            <v-btn color="rgb(109, 199, 109)" depressed dark block
+            <v-btn
+              color="rgb(109, 199, 109)"
+              @click="check"
+              depressed
+              dark
+              block
               >Submit</v-btn
             >
             <br />
@@ -59,6 +65,7 @@
 <script>
 import Forgotpassword from "./Forgotpassword";
 import ResetPassword from "./ResetPassword.vue";
+import { mapActions } from "vuex";
 export default {
   components: {
     Forgotpassword,
@@ -72,17 +79,34 @@ export default {
       show3: false,
       show4: false,
       reset: false,
-      password: "",
+      user: {
+        email: "",
+        password: "",
+      },
       rules: {
         required: (value) => !!value || "Required.",
         min: (v) => v.length >= 8 || "Min 8 characters",
         email: (value) => {
-          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          const pattern =
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
           return pattern.test(value) || "Invalid e-mail.";
         },
-        emailMatch: () => `The email and password you entered don't match`,
       },
     };
+  },
+  methods: {
+    ...mapActions({
+      login: "auth/login",
+    }),
+
+    check() {
+      if (this.user.email && this.user.password) {
+        let login = this.login(this.user);
+        if (login) {
+          this.$router.push("/dashboard");
+        }
+      }
+    },
   },
 };
 </script>

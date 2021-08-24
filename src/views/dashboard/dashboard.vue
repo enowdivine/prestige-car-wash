@@ -14,82 +14,58 @@
               mdi-account-circle
             </v-icon>
           </v-avatar>
-          <small class="email">admin@prestigecarwash.com</small>
+          <small class="email">{{ email }}</small>
         </v-toolbar-title>
       </div>
     </v-toolbar>
     <v-tabs vertical color="rgb(109, 199, 109)">
       <div class="tabs">
         <v-tab>
-          <v-icon left>
-            mdi-finance
-          </v-icon>
+          <v-icon left> mdi-finance </v-icon>
           <span>Statistics</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-account-cash
-          </v-icon>
+          <v-icon left> mdi-account-cash </v-icon>
           <span>Clients</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-car-wash
-          </v-icon>
+          <v-icon left> mdi-car-wash </v-icon>
           <span>Car Detailing</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-home-city
-          </v-icon>
+          <v-icon left> mdi-home-city </v-icon>
           <span>Home & Office Cleaning</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-home-edit
-          </v-icon>
+          <v-icon left> mdi-home-edit </v-icon>
           <span>Household Items Cleaning</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-car-cog
-          </v-icon>
+          <v-icon left> mdi-car-cog </v-icon>
           <span>Car Rentals and Repairs</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-school
-          </v-icon>
+          <v-icon left> mdi-school </v-icon>
           <span>Prestige Training Acedemy</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-truck-check
-          </v-icon>
+          <v-icon left> mdi-truck-check </v-icon>
           <span>Prestige Franchising</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-gift
-          </v-icon>
+          <v-icon left> mdi-gift </v-icon>
           <span>Packages</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-hand-heart
-          </v-icon>
+          <v-icon left> mdi-hand-heart </v-icon>
           <span>Services</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-car
-          </v-icon>
+          <v-icon left> mdi-car </v-icon>
           <span>Cars</span>
         </v-tab>
         <v-tab>
-          <v-icon left>
-            mdi-account
-          </v-icon>
+          <v-icon left> mdi-account </v-icon>
           <span>Profile</span>
         </v-tab>
       </div>
@@ -232,6 +208,9 @@
             <div class="scroller">
               <Profile />
             </div>
+            <div>
+              <v-btn @click="logout">Log out</v-btn>
+            </div>
           </v-container>
         </v-card>
       </v-tab-item>
@@ -252,7 +231,7 @@ import Rentalsandrepairs from "../../components/Rentalsandrepairs.vue";
 import Service from "../../components/Service.vue";
 import Cartype from "../../components/Cartype.vue";
 import Franchising from "../../components/Franchising.vue";
-
+import { mapGetters } from "vuex";
 export default {
   name: "dashboard",
   components: {
@@ -269,10 +248,26 @@ export default {
     Service,
     Cartype,
   },
+  computed: {
+    email() {
+      return this.getEmail();
+    },
+  },
+  methods: {
+    ...mapGetters({
+      getEmail: "auth/getUser",
+    }),
+    logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("login");
+      this.$router.push("/");
+    },
+  },
 };
 </script>
 
-, Franchising<style scoped>
+, Franchising
+<style scoped>
 .toolbar-head {
   width: 100%;
   display: flex;
