@@ -75,7 +75,12 @@
               <v-btn color="rgb(109, 199, 109)" text @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="rgb(109, 199, 109)" text @click="save">
+              <v-btn
+                :loading="loader"
+                color="rgb(109, 199, 109)"
+                text
+                @click="save"
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -101,22 +106,20 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="rgb(109, 199, 109)" @click="initialize">
-        Reset
-      </v-btn>
+      <p>No data to show !!</p>
     </template>
   </v-data-table>
 </template>
 
 <script>
+import axios from "axios";
+axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
 export default {
   data: () => ({
     dialog: false,
@@ -156,6 +159,7 @@ export default {
       gender: "",
       balance: 0,
     },
+    loader: null,
   }),
 
   computed: {
@@ -172,42 +176,21 @@ export default {
       val || this.closeDelete();
     },
   },
-
-  created() {
-    this.initialize();
+  beforeMount() {
+    this.getCustomers();
   },
-
   methods: {
-    initialize() {
-      this.customers = [
-        {
-          name: "Deon breanda",
-          contact: "0000000000",
-          email: "prestige@gmail.com",
-          address: "buea",
-          package: "Premium",
-          gender: "Male",
-          balance: 345678,
-        },
-        {
-          name: "Deon breanda",
-          contact: "0000000000",
-          email: "prestige@gmail.com",
-          address: "buea",
-          gender: "Male",
-          package: "Premium",
-          balance: 345678,
-        },
-        {
-          name: "Deon breanda",
-          contact: "0000000000",
-          email: "prestige@gmail.com",
-          address: "buea",
-          package: "Premium",
-          gender: "Male",
-          balance: 345678,
-        },
-      ];
+    async getCustomers() {
+      axios
+        .get("/customer/get_customers")
+        .then((res) => {
+          this.loader = false;
+          this.customers = res.data;
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
 
     editItem(item) {
@@ -244,12 +227,22 @@ export default {
     },
 
     save() {
+      this.loader = true;
+
       if (this.editedIndex > -1) {
+        // Updatng Client
+        axios.put(`/customer/edit_customer/${this.editedItem.id}`, this.editedItem).then(() => {
+          this.getCustomers();
+        });
         Object.assign(this.customers[this.editedIndex], this.editedItem);
       } else {
-        this.customers.push(this.editedItem);
+        // Create client
+        // 1 form validation
+        //2 request
+        axios.post("/customer/register_customer", this.editedItem).then(() => {
+          this.getCustomers();
+        });
       }
-      this.close();
     },
   },
 };

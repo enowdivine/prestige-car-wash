@@ -2,10 +2,9 @@
   <div class="main">
     <v-row>
       <v-col class="left"></v-col>
-        <v-col class="right"></v-col>
+      <v-col class="right"></v-col>
     </v-row>
     <Login class="form" />
-    <a href="/dashboard">dashboard</a>
   </div>
 </template>
 

@@ -98,16 +98,20 @@ export default {
     ...mapActions({
       login: "auth/login",
     }),
-
-    check() {
+   async check() {
       if (this.user.email && this.user.password) {
-        let login = this.login(this.user);
+        let login = await this.login(this.user);
         if (login) {
           this.$router.push("/dashboard");
         }
       }
     },
+    async reg(){
+      // form validation
+      
+    }
   },
+  
 };
 </script>
 
