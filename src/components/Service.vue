@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="customers"
+    :items="services"
     sort-by="name"
     class="elevation-1"
   >
@@ -29,7 +29,7 @@
               <v-container>
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.service"
+                  v-model="editedItem.name"
                   label="Service"
                 ></v-text-field>
 
@@ -55,7 +55,7 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this service?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -72,46 +72,48 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">
-        Reset
-      </v-btn>
+      <p>No data to show</p>
     </template>
   </v-data-table>
 </template>
 
 <script>
+//importing axios and adding token to headers
+import axios from "axios";
+axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    action: "add", // add functionality for adding services
     headers: [
       {
         text: "Service",
         align: "start",
         sortable: false,
-        value: "service",
+        value: "name",
       },
       { text: "Price (FCFA)", value: "price" },
       { text: "Actions", value: "actions", sortable: false },
     ],
-    customers: [],
+    services: [],
     editedIndex: -1,
     editedItem: {
-      service: "",
-      price: "",
+      name: "",
+      price: 0,
     },
     defaultItem: {
-      service: "",
-      price: "",
+      name: "",
+      price: 0,
     },
+    loader: null,
   }),
 
   computed: {
@@ -129,47 +131,86 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  beforeMount() {
+    this.getService();
   },
 
   methods: {
-    initialize() {
-      this.customers = [
-        {
-          service: "Express",
-          price: "100 000",
-        },
-        {
-          service: "Express",
-          price: "100 000",
-        },
-        {
-          service: "Express",
-          price: "100 000",
-        },
-        {
-          service: "Express",
-          price: "100 000",
-        },
-      ];
+    // save service
+    save() {
+      // adding service
+      if (this.action == "add") {
+        this.loader = true;
+        let payload = this.editedItem;
+        axios
+          .post("/settings/create_service", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getService();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      // edit service
+      if (this.action == "edit") {
+        let payload = this.editedItem; // @click to edit service
+        axios
+          .put(`/settings/edit_service/${payload._id}`, payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getService();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+    },
+
+    // getting services
+    getService() {
+      axios
+        .get("/settings/get_services")
+        .then((res) => {
+          this.services = res.data.reverse();
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
 
     editItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.action = "edit"; // @click to edit service
+      this.editedIndex = this.services.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.editedIndex = this.services.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
+    // deleting a service
     deleteItemConfirm() {
-      this.customers.splice(this.editedIndex, 1);
-      this.closeDelete();
+      this.loader = true;
+      axios
+        .delete(`/settings/delete_service/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getService();
+            this.closeDelete();
+          }
+        });
     },
 
     close() {
@@ -186,15 +227,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.customers[this.editedIndex], this.editedItem);
-      } else {
-        this.customers.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };

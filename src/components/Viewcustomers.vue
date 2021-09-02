@@ -1,10 +1,5 @@
 <template>
-  <v-data-table
-    :headers="headers"
-    :items="customers"
-    sort-by="name"
-    class="elevation-1"
-  >
+  <v-data-table :headers="headers" :items="customers" class="elevation-1">
     <template v-slot:top>
       <v-toolbar flat>
         <v-spacer></v-spacer>
@@ -89,7 +84,7 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this customer?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -116,6 +111,7 @@
 </template>
 
 <script>
+//importing axios and adding token to headers
 import axios from "axios";
 axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
 axios.defaults.headers.common["Authorization"] =
@@ -124,6 +120,7 @@ export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    action: "add", // add functionality for adding customers
     headers: [
       {
         text: "Name",
@@ -176,16 +173,60 @@ export default {
       val || this.closeDelete();
     },
   },
+
+  // function to load the records om startup
   beforeMount() {
     this.getCustomers();
   },
+
   methods: {
-    async getCustomers() {
+    // save customer
+    save() {
+      this.loader = true;
+      // add customer
+      if (this.action == "add") {
+        let payload = this.editedItem; //@click add customer
+        axios
+          .post("/customer/register_customer", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getCustomers();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      //edit customer
+      if (this.action == "edit") {
+        let payload = this.editedItem; //@click edit customer
+        axios
+          .put(`/customer/edit_customer/${payload._id}`, payload)
+          .then(async (res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              await this.getCustomers();
+              this.action = "add";
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+    },
+    //get customers
+    getCustomers() {
       axios
         .get("/customer/get_customers")
         .then((res) => {
-          this.loader = false;
-          this.customers = res.data;
+          this.customers = res.data.reverse();
           this.close();
         })
         .catch((err) => {
@@ -194,11 +235,13 @@ export default {
     },
 
     editItem(item) {
+      this.action = "edit"; //@click to edit customer
       this.editedIndex = this.customers.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
+    // deleting a service
     deleteItem(item) {
       this.editedIndex = this.customers.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -206,8 +249,14 @@ export default {
     },
 
     deleteItemConfirm() {
-      this.customers.splice(this.editedIndex, 1);
-      this.closeDelete();
+      axios
+        .delete(`/customer/delete_customer/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getCustomers();
+            this.closeDelete();
+          }
+        });
     },
 
     close() {
@@ -224,25 +273,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      this.loader = true;
-
-      if (this.editedIndex > -1) {
-        // Updatng Client
-        axios.put(`/customer/edit_customer/${this.editedItem.id}`, this.editedItem).then(() => {
-          this.getCustomers();
-        });
-        Object.assign(this.customers[this.editedIndex], this.editedItem);
-      } else {
-        // Create client
-        // 1 form validation
-        //2 request
-        axios.post("/customer/register_customer", this.editedItem).then(() => {
-          this.getCustomers();
-        });
-      }
     },
   },
 };

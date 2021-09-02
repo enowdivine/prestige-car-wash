@@ -34,11 +34,15 @@
             <v-btn
               color="rgb(109, 199, 109)"
               @click="check"
+              :loading="load"
               depressed
               dark
               block
               >Submit</v-btn
             >
+            <v-alert v-if="error" type="error" outlined dense>{{
+              msg
+            }}</v-alert>
             <br />
 
             <v-btn
@@ -79,6 +83,9 @@ export default {
       show3: false,
       show4: false,
       reset: false,
+      error: false,
+      msg: "",
+      load: false,
       user: {
         email: "",
         password: "",
@@ -98,20 +105,24 @@ export default {
     ...mapActions({
       login: "auth/login",
     }),
-   async check() {
+    async check() {
+      this.load = true;
       if (this.user.email && this.user.password) {
         let login = await this.login(this.user);
-        if (login) {
+        if (login.success) {
+          this.load = false;
           this.$router.push("/dashboard");
+        } else {
+          this.load = false;
+          this.error = true;
+          this.msg = login.msg;
         }
       }
     },
-    async reg(){
+    async reg() {
       // form validation
-      
-    }
+    },
   },
-  
 };
 </script>
 

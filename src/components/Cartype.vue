@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="customers"
+    :items="cars"
     sort-by="name"
     class="elevation-1"
   >
@@ -29,19 +29,19 @@
               <v-container>
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.car"
+                  v-model="editedItem.name"
                   label="Car"
                 ></v-text-field>
 
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.rentalPrice"
+                  v-model="editedItem.rental_price"
                   label="Rental Price"
                 ></v-text-field>
 
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.repairPrice"
+                  v-model="editedItem.repair_price"
                   label="Repair Price"
                 ></v-text-field>
               </v-container>
@@ -61,20 +61,14 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this car?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn
-                color="rgb(109, 199, 109)"
-                text
-                @click="closeDelete"
+              <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
                 >Cancel</v-btn
               >
-              <v-btn
-                color="rgb(109, 199, 109)"
-                text
-                @click="deleteItemConfirm"
+              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
                 >OK</v-btn
               >
               <v-spacer></v-spacer>
@@ -84,49 +78,51 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="rgb(109, 199, 109)" @click="initialize">
-        Reset
-      </v-btn>
+      <p>No data to show</p>
     </template>
   </v-data-table>
 </template>
 
 <script>
+//importing axios and adding token to headers
+import axios from "axios";
+axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    action: "add", // add functionality for adding cartypes
     headers: [
       {
         text: "Car",
         align: "start",
         sortable: false,
-        value: "car",
+        value: "name",
       },
-      { text: "Rental Price (FCFA)", value: "rentalPrice" },
-      { text: "Repair Price (FCFA)", value: "repairPrice" },
+      { text: "Rental Price (FCFA)", value: "rental_price" },
+      { text: "Repair Price (FCFA)", value: "repair_price" },
       { text: "Actions", value: "actions", sortable: false },
     ],
-    customers: [],
+    cars: [],
     editedIndex: -1,
     editedItem: {
-      car: "",
-      rentalPrice: "",
-      repairPrice:"",
+      name: "",
+      rental_price: 0,
+      repair_price: 0,
     },
     defaultItem: {
-      car: "",
-      rentalPrice: "",
-      repairPrice:"",
+      name: "",
+      rental_price: 0,
+      repair_price: 0,
     },
+    loader: null,
   }),
 
   computed: {
@@ -144,51 +140,87 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  // function to load the records om startup
+  beforeMount() {
+    this.getcars();
   },
 
   methods: {
-    initialize() {
-      this.customers = [
-        {
-          car: "Express",
-          rentalPrice: "45678",
-          repairPrice: "45678",
-        },
-        {
-          car: "Express",
-          rentalPrice: "45678",
-          repairPrice: "45678",
-        },
-        {
-          car: "Express",
-          rentalPrice: "45678",
-          repairPrice: "45678",
-        },
-        {
-          car: "Express",
-          rentalPrice: "45678",
-          repairPrice: "45678",
-        },
-      ];
+    // save cars
+    save() {
+      this.loader = true;
+      if (this.action == "add") {
+        let payload = this.editedItem; // @click to add a car
+        axios
+          .post("/settings/create_car", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getcars();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      if (this.action == "edit") {
+        let payload = this.editedItem; // @click to add a car
+        axios
+          .put(`/settings/edit_car/${payload._id}`, payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getcars();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
     },
 
+    // getting cars
+    getcars() {
+      axios
+        .get("/settings/get_cars")
+        .then((res) => {
+          this.cars = res.data.reverse();
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
+    // delete function to delete a car
+
     editItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.action = "edit"; //@click to edit cars
+      this.editedIndex = this.cars.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.editedIndex = this.cars.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.customers.splice(this.editedIndex, 1);
-      this.closeDelete();
+      axios
+        .delete(`/settings/delete_car/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getcars();
+            this.closeDelete();
+          }
+        });
     },
 
     close() {
@@ -205,15 +237,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.customers[this.editedIndex], this.editedItem);
-      } else {
-        this.customers.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };

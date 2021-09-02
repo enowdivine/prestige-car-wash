@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="customers"
+    :items="packages"
     sort-by="name"
     class="elevation-1"
   >
@@ -61,7 +61,7 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this package?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -78,26 +78,27 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">
-        Reset
-      </v-btn>
+      <v-btn color="primary" @click="initialize"> Reset </v-btn>
     </template>
   </v-data-table>
 </template>
 
 <script>
+//importing axios and adding token to headers
+import axios from "axios";
+axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    action: "add",
     headers: [
       {
         text: "Name",
@@ -109,7 +110,7 @@ export default {
       { text: "Price (FCFA)", value: "price" },
       { text: "Actions", value: "actions", sortable: false },
     ],
-    customers: [],
+    packages: [],
     editedIndex: -1,
     editedItem: {
       name: "",
@@ -121,6 +122,7 @@ export default {
       period: "",
       price: "",
     },
+    loader: null,
   }),
 
   computed: {
@@ -138,51 +140,87 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  beforeMount() {
+    this.getPackages();
   },
 
   methods: {
-    initialize() {
-      this.customers = [
-        {
-          name: "Express",
-          period: "Annually",
-          price: "100 000",
-        },
-        {
-          name: "Express",
-          period: "Annually",
-          price: "100 000",
-        },
-        {
-          name: "Express",
-          period: "Annually",
-          price: "100 000",
-        },
-        {
-          name: "Express",
-          period: "Annually",
-          price: "100 000",
-        },
-      ];
+    // save package
+    save() {
+      this.loader = true;
+      // add package
+      if (this.action == "add") {
+        let payload = this.editedItem; //@click add package
+        axios
+          .post("/settings/create_package", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getPackages();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      //edit package
+      if (this.action == "edit") {
+        let payload = this.editedItem; //@click edit package
+        axios
+          .put(`/settings/edit_package/${payload._id}`, payload)
+          .then(async (res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              await this.getPackages();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+    },
+
+    getPackages() {
+      this.loader = true;
+      axios
+        .get("/settings/get_packages")
+        .then((res) => {
+          this.packages = res.data.reverse();
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
 
     editItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.action = "edit"; //@click to edit package
+      this.editedIndex = this.packages.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.editedIndex = this.packages.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.customers.splice(this.editedIndex, 1);
-      this.closeDelete();
+      axios
+        .delete(`/settings/delete_package/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getPackages();
+            this.closeDelete();
+          }
+        });
     },
 
     close() {
@@ -199,15 +237,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.customers[this.editedIndex], this.editedItem);
-      } else {
-        this.customers.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };

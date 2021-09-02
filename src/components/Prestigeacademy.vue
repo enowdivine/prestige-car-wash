@@ -43,7 +43,17 @@
                 ></v-text-field>
 
                 <v-text-field
-                  v-model="editedItem.trainingPeriod"
+                  v-model="editedItem.gender"
+                  label="Gender"
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="editedItem.date"
+                  label="Date"
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="editedItem.period"
                   label="Training Period"
                 ></v-text-field>
 
@@ -68,7 +78,7 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this student?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -85,26 +95,27 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">
-        Reset
-      </v-btn>
+      <p>No data to show</p>
     </template>
   </v-data-table>
 </template>
 
 <script>
+//importing axios and adding token to headers
+import axios from "axios";
+axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    action: "add",
     headers: [
       {
         text: "Name",
@@ -113,8 +124,10 @@ export default {
         value: "name",
       },
       { text: "Contact", value: "contact" },
-      { text: "Addres", value: "address" },
-      { text: "Training Period", value: "trainingPeriod" },
+      { text: "Address", value: "address" },
+      { text: "Gender", value: "gender" },
+      { text: "Date", value: "date" },
+      { text: "Training Period", value: "period" },
       { text: "Amount (FCFA)", value: "amount" },
       { text: "Actions", value: "actions", sortable: false },
     ],
@@ -124,16 +137,21 @@ export default {
       name: "",
       contact: "",
       address: "",
-      trainingPeriod: "",
+      gender: "",
+      date: "",
+      period: "",
       amount: 0,
     },
     defaultItem: {
-      nname: "",
+      name: "",
       contact: "",
       address: "",
-      trainingPeriod: "",
+      gender: "",
+      date: "",
+      period: "",
       amount: 0,
     },
+    loader: null,
   }),
 
   computed: {
@@ -151,85 +169,104 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  beforeMount() {
+    this.getTrainees();
   },
 
   methods: {
-    initialize() {
-      this.trainees = [
-        {
-          name: "Express",
-          contact: "Annually",
-          address: "5000",
-          trainingPeriod: "6 months",
-          amount: 345678,
-        },
-        {
-          name: "Express",
-          contact: "Annually",
-          address: "5000",
-          trainingPeriod: "6 months",
-          amount: 345678,
-        },
-        {
-          name: "Express",
-          contact: "Annually",
-          address: "5000",
-          trainingPeriod: "6 months",
-          amount: 345678,
-        },
-        {
-          name: "Express",
-          contact: "Annually",
-          address: "5000",
-          trainingPeriod: "6 months",
-          amount: 345678,
-        },
-      ];
-    },
-
-    editItem(item) {
-      this.editedIndex = this.trainees.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
-    deleteItem(item) {
-      this.editedIndex = this.trainees.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
-
-    deleteItemConfirm() {
-      this.trainees.splice(this.editedIndex, 1);
-      this.closeDelete();
-    },
-
-    close() {
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
+    // save trainee
     save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.trainees[this.editedIndex], this.editedItem);
-      } else {
-        this.trainees.push(this.editedItem);
+      this.loader = true;
+      // add trainee
+      if (this.action == "add") {
+        let payload = this.editedItem; //@click add trainee
+        axios
+          .post("/training/register_trainee", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getTrainees();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
       }
-      this.close();
+
+      //edit trainee
+      if (this.action == "edit") {
+        let payload = this.editedItem; //@click edit trainee
+        axios
+          .put(`/training/edit_trainee/${payload._id}`, payload)
+          .then(async (res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              await this.getTrainees();
+              this.action = "add";
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
     },
+
+    getTrainees() {
+      axios
+        .get("/training/get_trainees")
+        .then((res) => {
+          this.trainees = res.data.reverse();
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+  },
+
+  editItem(item) {
+    this.action = "edit"; //@click to edit trainee
+    this.editedIndex = this.trainees.indexOf(item);
+    this.editedItem = Object.assign({}, item);
+    this.dialog = true;
+  },
+
+  deleteItem(item) {
+    this.editedIndex = this.trainees.indexOf(item);
+    this.editedItem = Object.assign({}, item);
+    this.dialogDelete = true;
+  },
+
+  deleteItemConfirm() {
+    axios
+      .delete(`/training/delete_trainee/${this.editedItem._id}`)
+      .then((res) => {
+        if (res.data.success) {
+          this.getTrainees();
+          this.closeDelete();
+        }
+      });
+  },
+
+  close() {
+    this.dialog = false;
+    this.$nextTick(() => {
+      this.editedItem = Object.assign({}, this.defaultItem);
+      this.editedIndex = -1;
+    });
+  },
+
+  closeDelete() {
+    this.dialogDelete = false;
+    this.$nextTick(() => {
+      this.editedItem = Object.assign({}, this.defaultItem);
+      this.editedIndex = -1;
+    });
   },
 };
 </script>

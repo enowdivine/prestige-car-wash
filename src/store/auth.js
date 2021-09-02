@@ -1,5 +1,8 @@
 import axios from "axios";
 
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   namespaced: true,
   state: {
@@ -18,14 +21,24 @@ export default {
     },
   },
   actions: {
-    login({ commit }, payload) {
-      axios.post("/auth/login", payload).then((res) => {
-        localStorage.setItem("token", res.data.token);
+    async login({ commit }, payload) {
+      let result = await axios.post("/auth/login", payload);
+      if (result.data.success) {
+        localStorage.setItem("token", result.data.token);
         localStorage.setItem("login", true);
-        commit("setUser", res);
-      });
-      return true;
+        commit("setUser", result);
+        return {
+          success: true,
+          msg: result.data.msg,
+        };
+      }
+      return {
+        success: false,
+        msg: result.data.msg,
+      };
     },
-    // recoverPassword(payload) {},
+    // recoverPassword(payload) {
+
+    // },
   },
 };

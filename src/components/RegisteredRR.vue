@@ -102,9 +102,7 @@
     </template>
 
     <template v-slot:no-data>
-      <v-btn color="rgb(109, 199, 109)" @click="initialize">
-        Reset
-      </v-btn>
+      <v-btn color="rgb(109, 199, 109)" @click="initialize"> Reset </v-btn>
     </template>
   </v-data-table>
 </template>
