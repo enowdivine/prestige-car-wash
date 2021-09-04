@@ -227,46 +227,46 @@ export default {
           console.log(err);
         });
     },
-  },
 
-  editItem(item) {
-    this.action = "edit"; //@click to edit trainee
-    this.editedIndex = this.trainees.indexOf(item);
-    this.editedItem = Object.assign({}, item);
-    this.dialog = true;
-  },
+    editItem(item) {
+      this.action = "edit"; //@click to edit trainee
+      this.editedIndex = this.trainees.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
 
-  deleteItem(item) {
-    this.editedIndex = this.trainees.indexOf(item);
-    this.editedItem = Object.assign({}, item);
-    this.dialogDelete = true;
-  },
+    deleteItem(item) {
+      this.editedIndex = this.trainees.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
+    },
 
-  deleteItemConfirm() {
-    axios
-      .delete(`/training/delete_trainee/${this.editedItem._id}`)
-      .then((res) => {
-        if (res.data.success) {
-          this.getTrainees();
-          this.closeDelete();
-        }
+    deleteItemConfirm() {
+      axios
+        .delete(`/training/delete_trainee/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getTrainees();
+            this.closeDelete();
+          }
+        });
+    },
+
+    close() {
+      this.dialog = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
       });
-  },
+    },
 
-  close() {
-    this.dialog = false;
-    this.$nextTick(() => {
-      this.editedItem = Object.assign({}, this.defaultItem);
-      this.editedIndex = -1;
-    });
-  },
-
-  closeDelete() {
-    this.dialogDelete = false;
-    this.$nextTick(() => {
-      this.editedItem = Object.assign({}, this.defaultItem);
-      this.editedIndex = -1;
-    });
+    closeDelete() {
+      this.dialogDelete = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
   },
 };
 </script>

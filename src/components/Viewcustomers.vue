@@ -156,7 +156,7 @@ export default {
       gender: "",
       balance: 0,
     },
-    loader: null,
+    loader: false,
   }),
 
   computed: {
