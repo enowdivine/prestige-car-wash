@@ -3,7 +3,7 @@
     :headers="headers"
     :items="guestclients"
     class="elevation-1"
-    items-per-page="7"
+    :items-per-page="7"
   >
     <template v-slot:top>
       <v-toolbar flat>

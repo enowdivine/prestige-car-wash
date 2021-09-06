@@ -113,7 +113,6 @@
 <script>
 //importing axios and adding token to headers
 import axios from "axios";
-axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
 axios.defaults.headers.common["Authorization"] =
   "Bearer " + localStorage.getItem("token");
 export default {

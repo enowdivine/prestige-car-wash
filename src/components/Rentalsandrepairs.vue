@@ -22,11 +22,7 @@ import GuestRR from "./GuestRR.vue";
 import RegisteredRR from "./RegisteredRR.vue";
 export default {
   components: { RegisteredRR, GuestRR },
-  data: () => ({
-    services: ["Rental", "Repairs"],
-    carType: ["SUV", "RAV4"],
-    gender: ["Male", "Female"],
-  }),
+  data: () => ({}),
 };
 </script>
 

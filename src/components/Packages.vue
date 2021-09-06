@@ -82,7 +82,7 @@
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize"> Reset </v-btn>
+      <p>No data to show</p>
     </template>
   </v-data-table>
 </template>

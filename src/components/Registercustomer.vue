@@ -21,7 +21,7 @@
         ></v-text-field>
 
         <v-select
-          :items="services"
+          :items="serviceString"
           v-model="formInfo.service"
           label="Required Service"
           outlined
@@ -71,7 +71,7 @@
           required
         ></v-text-field>
         <v-select
-          :items="services"
+          :items="serviceString"
           v-model="formData.service"
           label="Required Service"
           outlined
@@ -94,6 +94,7 @@
           >Submit</v-btn
         >
       </v-form>
+      <span v-show="false"> {{ chooseService }} </span>
     </v-tab-item>
   </v-tabs>
 </template>
@@ -101,29 +102,14 @@
 <script>
 //importing axios and adding token to headers
 import axios from "axios";
-axios.defaults.baseURL = "https://car-wash-backend.herokuapp.com/api";
 axios.defaults.headers.common["Authorization"] =
   "Bearer " + localStorage.getItem("token");
 
 export default {
   data: () => ({
-    services: [
-      "Classic wash",
-      "Engine Detailing",
-      "Headlights Restoration",
-      "Air Vents Stream Cleaning",
-      "Carpet Detailing",
-      "Chair Detailing",
-      "Safety Belt Cleaning",
-      "Radiator Flushing",
-      "Chassis/Undercarriage Pressure Cleaning",
-      "Tyre and Wheel Drum Shinning",
-      "Car Polishing, Waxing and Stain Renoval",
-      "Fill Detailing",
-    ],
     gender: ["Male", "Female"],
-    cars: ["Mercedes", "Infinity"],
-
+    services: [],
+    serviceString: [],
     formData: {
       name: "",
       contact: "",
@@ -140,11 +126,32 @@ export default {
 
     load: null,
   }),
-
+  computed: {
+    chooseService() {
+      this.services.forEach((service) => {
+        if (this.formInfo.service == service.name) {
+          this.formInfo.cost = service.price;
+        }
+      });
+      this.services.forEach((service) => {
+        if (this.formData.service == service.name) {
+          this.formData.cost = service.price;
+        }
+      });
+      return true;
+    },
+  },
+  async beforeMount() {
+    await axios.get("/settings/get_services").then((res) => {
+      this.services = res.data;
+    });
+    this.services.forEach((service) => {
+      this.serviceString.push(service.name);
+    });
+  },
   methods: {
     submit() {
       this.load = true;
-
       let payload = this.formData;
       axios
         .post("/guest/create_activity", payload)
@@ -178,14 +185,18 @@ export default {
 
     save() {
       this.load = true;
-
       let payload = this.formInfo;
       axios
         .post("/registered/create_activity", payload)
         .then((res) => {
+          console.log(res.data);
           if (res.data.success) {
             this.getRegisteredClients();
             this.load = false;
+          } else {
+            this.getRegisteredClients();
+            this.load = false;
+            alert(res.data.msg);
           }
         })
         .catch((err) => {
@@ -206,6 +217,8 @@ export default {
           console.log(err);
         });
     },
+
+    getServices() {},
   },
 };
 </script>

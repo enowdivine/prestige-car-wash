@@ -10,10 +10,6 @@
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
-
             <v-card-text>
               <v-container>
                 <v-text-field

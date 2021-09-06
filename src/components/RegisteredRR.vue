@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="customers"
+    :items="registeredclients"
     sort-by="name"
     class="elevation-1"
   >
@@ -33,49 +33,45 @@
                   label="Name"
                 ></v-text-field>
 
-                <v-text-field
-                  color="rgb(109, 199, 109)"
-                  v-model="editedItem.contact"
-                  label="Contact"
-                ></v-text-field>
-
-                <v-text-field
-                  color="rgb(109, 199, 109)"
-                  v-model="editedItem.email"
-                  label="Email"
-                ></v-text-field>
-
-                <v-text-field
-                  color="rgb(109, 199, 109)"
-                  v-model="editedItem.address"
-                  label="Address"
-                ></v-text-field>
-
-                <v-text-field
-                  color="rgb(109, 199, 109)"
+                <v-select
+                  :items="requiredServices"
                   v-model="editedItem.service"
-                  label="Service"
-                ></v-text-field>
+                  label="Required Service"
+                  color="rgb(109, 199, 109)"
+                ></v-select>
+
+                <v-select
+                  :items="serviceString"
+                  v-model="editedItem.car_type"
+                  label="Car Type"
+                  color="rgb(109, 199, 109)"
+                ></v-select>
 
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.carNumber"
-                  label="Car Number"
-                ></v-text-field>
-                <v-text-field
-                  color="rgb(109, 199, 109)"
-                  v-model="editedItem.carType"
-                  label="Car Type"
+                  v-model="editedItem.rental_price"
+                  label="Price"
+                  required
                 ></v-text-field>
               </v-container>
             </v-card-text>
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="rgb(109, 199, 109)" text @click="close">
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="close"
+                :loading="load"
+              >
                 Cancel
               </v-btn>
-              <v-btn color="rgb(109, 199, 109)" text @click="save">
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="save"
+                :loading="load"
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -84,7 +80,7 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this customer?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -102,16 +98,25 @@
     </template>
 
     <template v-slot:no-data>
-      <v-btn color="rgb(109, 199, 109)" @click="initialize"> Reset </v-btn>
+      <p>No data to show</p>
     </template>
+    <span v-show="false"> {{ chooseService }} </span>
   </v-data-table>
 </template>
 
 <script>
+//importing axios and adding token to headers
+import axios from "axios";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   data: () => ({
+    requiredServices: ["Rentals", "Repairs"],
+    serviceString: [],
     dialog: false,
     dialogDelete: false,
+    action: "add", // add functionality for adding customers
     headers: [
       {
         text: "Name",
@@ -119,44 +124,44 @@ export default {
         sortable: false,
         value: "name",
       },
-      { text: "Contact", value: "contact", sortable: false },
-      { text: "Email", value: "email", sortable: false },
-      { text: "Address", value: "address", sortable: false },
       { text: "Service", value: "service", sortable: false },
-      { text: "Car Number", value: "carNumber", sortable: false },
-      { text: "Car Type", value: "carType", sortable: false },
-      { text: "Gender", value: "gender", sortable: false },
+      { text: "Car Number", value: "car_number", sortable: false },
+      { text: "Car Type", value: "car_type", sortable: false },
       { text: "Cost (FCFA)", value: "cost", sortable: false },
     ],
-    customers: [],
+    registeredclients: [],
     editedIndex: -1,
     editedItem: {
       name: "",
-      contact: "",
-      email: "",
-      address: "",
       service: "",
-      carNumber: "",
-      carType: "",
-      gender: "",
+      car_number: "",
+      car_type: "",
       cost: 0,
     },
     defaultItem: {
       name: "",
-      contact: "",
-      email: "",
-      address: "",
       service: "",
-      carNumber: "",
-      carType: "",
-      gender: "",
+      car_number: "",
+      car_type: "",
       cost: 0,
     },
+    load: null,
   }),
 
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Client" : "Edit Client";
+    },
+
+    chooseService() {
+      if (this.car_types) {
+        this.car_types.forEach((car_type) => {
+          if (this.editedItem.car_type == car_type.name) {
+            this.editedItem.rental_price = car_type.rental_price;
+          }
+        });
+      }
+      return true;
     },
   },
 
@@ -169,63 +174,87 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  async beforeMount() {
+    this.getCustomers();
+    await axios.get("/settings/get_cars").then((res) => {
+      this.car_types = res.data;
+    });
+    this.car_types.forEach((car_type) => {
+      this.serviceString.push(car_type.name);
+    });
   },
 
   methods: {
-    initialize() {
-      this.customers = [
-        {
-          name: "breanda",
-          contact: "0000000000",
-          email: "prestige@gmail.com",
-          address: "buea",
-          service: "Premium",
-          carNumber: "carNumber",
-          carType: "carType",
-          gender: "Male",
-          cost: 345678,
-        },
-        {
-          name: "breanda",
-          contact: "0000000000",
-          email: "prestige@gmail.com",
-          address: "buea",
-          service: "Premium",
-          carNumber: "carNumber",
-          carType: "carType",
-          gender: "Male",
-          cost: 345678,
-        },
-        {
-          name: "breanda",
-          contact: "0000000000",
-          email: "prestige@gmail.com",
-          address: "buea",
-          service: "Premium",
-          carNumber: "carNumber",
-          carType: "carType",
-          gender: "Male",
-          cost: 345678,
-        },
-      ];
+    // save customer
+    save() {
+      this.loader = true;
+      // add customer
+      if (this.action == "add") {
+        let payload = this.editedItem; //@click add customer
+        axios
+          .post("/registered/add_car_rental_and_repair", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getCustomers();
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      //edit customer
+      if (this.action == "edit") {
+        let payload = this.editedItem; //@click edit customer
+        axios
+          .put(`/registered/edit_car_rental_and_repair/${payload._id}`, payload)
+          .then(async (res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              await this.getCustomers();
+              this.action = "add";
+              this.loader = false;
+            }
+          })
+          .catch((err) => {
+            this.loader = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+    },
+
+    //get customers
+    getCustomers() {
+      axios
+        .get("/registered/get_car_rental_and_repair")
+        .then((res) => {
+          this.registeredclients = res.data.reverse();
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
 
     editItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.action = "edit"; //@click to edit customer
+      this.editedIndex = this.registeredclients.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.editedIndex = this.registeredclients.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.customers.splice(this.editedIndex, 1);
+      this.registeredclients.splice(this.editedIndex, 1);
       this.closeDelete();
     },
 
@@ -243,15 +272,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.customers[this.editedIndex], this.editedItem);
-      } else {
-        this.customers.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };
