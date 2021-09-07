@@ -101,6 +101,7 @@ export default {
       },
     };
   },
+
   methods: {
     ...mapActions({
       login: "auth/login",
@@ -108,14 +109,19 @@ export default {
     async check() {
       this.load = true;
       if (this.user.email && this.user.password) {
-        let login = await this.login(this.user);
-        if (login.success) {
+        if (this.user.password.length < 8) {
           this.load = false;
-          this.$router.push("/dashboard");
+          this.msg = "Minimum 8 characters required";
         } else {
-          this.load = false;
-          this.error = true;
-          this.msg = login.msg;
+          let login = await this.login(this.user);
+          if (login.success) {
+            this.load = false;
+            this.$router.push("/dashboard");
+          } else {
+            this.load = false;
+            this.error = true;
+            this.msg = login.msg;
+          }
         }
       }
     },
@@ -127,6 +133,10 @@ export default {
 </script>
 
 <style scoped>
+.has_required {
+  text-decoration: line-through;
+  color: #689868;
+}
 .card {
   box-shadow: 5px 5px 8px 5px rgba(0, 0, 0, 0.2);
   z-index: 1;

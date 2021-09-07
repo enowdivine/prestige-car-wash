@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="customers"
+    :items="admins"
     sort-by="name"
     class="elevation-1"
   >
@@ -18,7 +18,7 @@
                 ></v-text-field>
 
                 <v-text-field
-                  v-model="editedItem.phoneNumber"
+                  v-model="editedItem.contact"
                   label="Phone Number"
                 ></v-text-field>
 
@@ -44,7 +44,13 @@
               <v-btn color="rgb(109, 199, 109)" text @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="rgb(109, 199, 109)" text @click="save">
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="save"
+                :loading="load"
+                load
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -53,7 +59,7 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to delete this admin?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -74,14 +80,20 @@
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize"> Reset </v-btn>
+      <p>No data to show</p>
     </template>
   </v-data-table>
 </template>
 
 <script>
+//importing axios and adding token to headers
+import axios from "axios";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
+
 export default {
   data: () => ({
+    action: "add", // add functionality for adding admins
     dialog: false,
     dialogDelete: false,
     headers: [
@@ -91,18 +103,18 @@ export default {
         sortable: false,
         value: "name",
       },
-      { text: "Phone Number", value: "phoneNumber" },
+      { text: "Phone Number", value: "contact" },
       { text: "Email", value: "email" },
       { text: "Address", value: "address" },
       { text: "Gender", value: "gender" },
       { text: "Password", value: "password" },
       { text: "Actions", value: "actions", sortable: false },
     ],
-    customers: [],
+    admins: [],
     editedIndex: -1,
     editedItem: {
       name: "",
-      phoneNumber: "",
+      contact: "",
       email: "",
       address: "",
       gender: "",
@@ -110,12 +122,13 @@ export default {
     },
     defaultItem: {
       name: "",
-      phoneNumber: "",
+      contact: "",
       email: "",
       address: "",
       gender: "",
       password: "",
     },
+    load: null,
   }),
 
   watch: {
@@ -127,38 +140,80 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  beforeMount() {
+    this.getAdmin();
   },
 
   methods: {
-    initialize() {
-      this.customers = [
-        {
-          name: "Deon breanda",
-          phoneNumber: "0000000000",
-          address: "buea",
-          email: "deon@prestigecarwash.com",
-          gender: "Male",
-          password: 345678,
-        },
-      ];
+    // save admin
+    save() {
+      this.load = true;
+      // add admin
+      if (this.action == "add") {
+        let payload = this.editedItem; //@click add admin
+        axios
+          .post("/auth/register", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getAdmin();
+              this.load = false;
+            }
+          })
+          .catch((err) => {
+            this.load = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      //edit admin
+      if (this.action == "edit") {
+        let payload = this.editedItem; //@click edit admin
+        axios
+          .put(`/auth/edit_profile/${payload._id}`, payload)
+          .then(async (res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              await this.getAdmin();
+              this.action = "add";
+              this.load = false;
+            }
+          })
+          .catch((err) => {
+            this.load = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+    },
+
+    getAdmin() {
+      axios
+        .get("/auth/get_admins")
+        .then((res) => {
+          this.admins = res.data.reverse();
+          this.close();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
 
     editItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.action = "edit"; //@click to edit admins
+      this.editedIndex = this.admins.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.customers.indexOf(item);
+      this.editedIndex = this.admins.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.customers.splice(this.editedIndex, 1);
+      this.admins.splice(this.editedIndex, 1);
       this.closeDelete();
     },
 
@@ -176,15 +231,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.customers[this.editedIndex], this.editedItem);
-      } else {
-        this.customers.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };
