@@ -1,111 +1,121 @@
 <template>
-  <v-tabs centered color="rgb(109, 199, 109)">
-    <v-tab>Registered Clients</v-tab>
-    <v-tab>Guest Clients</v-tab>
-    <v-tab-item>
-      <v-form>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formInfo.name"
-          outlined
-          label="Name"
-          required
-        ></v-text-field>
+  <div class="board">
+    <v-tabs centered color="rgb(109, 199, 109)">
+      <v-tab>Registered Clients</v-tab>
+      <v-tab>Guest Clients</v-tab>
+      <v-tab-item>
+        <Cardetailingregistered />
+        <v-form>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formInfo.name"
+            outlined
+            label="Name"
+            required
+          ></v-text-field>
 
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formInfo.email"
-          outlined
-          label="Email"
-          required
-        ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formInfo.email"
+            outlined
+            label="Email"
+            required
+          ></v-text-field>
 
-        <v-select
-          :items="serviceString"
-          v-model="formInfo.service"
-          label="Required Service"
-          outlined
-          color="rgb(109, 199, 109)"
-        ></v-select>
+          <v-select
+            :items="serviceString"
+            v-model="formInfo.service"
+            label="Required Service"
+            outlined
+            color="rgb(109, 199, 109)"
+          ></v-select>
 
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formInfo.cost"
-          outlined
-          label="Amount"
-          required
-        ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formInfo.cost"
+            outlined
+            label="Amount"
+            required
+          ></v-text-field>
 
-        <v-btn
-          block
-          color="rgb(109, 199, 109)"
-          dark
-          @click="save"
-          :loading="load"
-          >Submit</v-btn
-        >
-      </v-form>
-    </v-tab-item>
+          <v-btn
+            block
+            color="rgb(109, 199, 109)"
+            dark
+            @click="save"
+            :loading="load"
+            >Submit</v-btn
+          >
+        </v-form>
+      </v-tab-item>
 
-    <v-tab-item>
-      <v-form>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formData.name"
-          outlined
-          label="Name"
-          required
-        ></v-text-field>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formData.contact"
-          outlined
-          label="Contact"
-          required
-        ></v-text-field>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formData.address"
-          outlined
-          label="Adress"
-          required
-        ></v-text-field>
-        <v-select
-          :items="serviceString"
-          v-model="formData.service"
-          label="Required Service"
-          outlined
-          color="rgb(109, 199, 109)"
-        ></v-select>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="formData.cost"
-          outlined
-          label="Amount"
-          required
-        ></v-text-field>
+      <v-tab-item>
+        <Cardetailingguest />
+        <v-form>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formData.name"
+            outlined
+            label="Name"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formData.contact"
+            outlined
+            label="Contact"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formData.address"
+            outlined
+            label="Adress"
+            required
+          ></v-text-field>
+          <v-select
+            :items="serviceString"
+            v-model="formData.service"
+            label="Required Service"
+            outlined
+            color="rgb(109, 199, 109)"
+          ></v-select>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="formData.cost"
+            outlined
+            label="Amount"
+            required
+          ></v-text-field>
 
-        <v-btn
-          block
-          color="rgb(109, 199, 109)"
-          dark
-          @click="submit"
-          :loading="load"
-          >Submit</v-btn
-        >
-      </v-form>
-      <span v-show="false"> {{ chooseService }} </span>
-    </v-tab-item>
-  </v-tabs>
+          <v-btn
+            block
+            color="rgb(109, 199, 109)"
+            dark
+            @click="submit"
+            :loading="load"
+            >Submit</v-btn
+          >
+        </v-form>
+        <span v-show="false"> {{ chooseService }} </span>
+      </v-tab-item>
+    </v-tabs>
+  </div>
 </template>
 
 <script>
+import Cardetailingregistered from "./Cardetailingregistered.vue";
+import Cardetailingguest from "./Cardetailingguest.vue";
 //importing axios and adding token to headers
 import axios from "axios";
 axios.defaults.headers.common["Authorization"] =
   "Bearer " + localStorage.getItem("token");
 
 export default {
+  components: {
+    Cardetailingregistered,
+    Cardetailingguest,
+  },
   data: () => ({
     gender: ["Male", "Female"],
     services: [],
@@ -224,6 +234,12 @@ export default {
 </script>
 
 <style scoped>
+.board {
+  width: 100%;
+  height: 100%;
+  padding: 40px;
+  background-color: whitesmoke;
+}
 .v-form {
   border-radius: 5px;
   width: 60%;

@@ -1,78 +1,87 @@
 <template>
-  <v-tabs centered color="rgb(109, 199, 109)">
-    <v-tab>Registered Clients</v-tab>
-    <v-tab>Guest Clients</v-tab>
+  <div class="board">
+    <v-tabs centered color="rgb(109, 199, 109)">
+      <v-tab>Registered Clients</v-tab>
+      <v-tab>Guest Clients</v-tab>
 
-    <v-tab-item>
-      <v-form>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="HomeAndOffice.name"
-          outlined
-          label="Name"
-          required
-        ></v-text-field>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="HomeAndOffice.email"
-          outlined
-          label="Email"
-          required
-        ></v-text-field>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="HomeAndOffice.address"
-          outlined
-          label="Address"
-          required
-        ></v-text-field>
+      <v-tab-item>
+        <v-form>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="HomeAndOffice.name"
+            outlined
+            label="Name"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="HomeAndOffice.email"
+            outlined
+            label="Email"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="HomeAndOffice.address"
+            outlined
+            label="Address"
+            required
+          ></v-text-field>
 
-        <v-btn
-          block
-          color="rgb(109, 199, 109)"
-          dark
-          @click="submit"
-          :loading="load"
-          >Submit</v-btn
-        >
-      </v-form>
-    </v-tab-item>
+          <v-btn
+            block
+            color="rgb(109, 199, 109)"
+            dark
+            @click="submit"
+            :loading="load"
+            >Submit</v-btn
+          >
+        </v-form>
+      </v-tab-item>
 
-    <v-tab-item>
-      <v-form>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="GuestHome.name"
-          outlined
-          label="Name"
-          required
-        ></v-text-field>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="GuestHome.contact"
-          outlined
-          label="Contact"
-          required
-        ></v-text-field>
-        <v-text-field
-          color="rgb(109, 199, 109)"
-          v-model="GuestHome.address"
-          outlined
-          label="Address"
-          required
-        ></v-text-field>
+      <v-tab-item>
+        <v-form>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="GuestHome.name"
+            outlined
+            label="Name"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="GuestHome.contact"
+            outlined
+            label="Contact"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="GuestHome.address"
+            outlined
+            label="Address"
+            required
+          ></v-text-field>
+          <v-text-field
+            color="rgb(109, 199, 109)"
+            v-model="GuestHome.cost"
+            outlined
+            label="Amount"
+            required
+          ></v-text-field>
 
-        <v-btn
-          block
-          color="rgb(109, 199, 109)"
-          dark
-          @click="save"
-          :loading="load"
-          >Submit</v-btn
-        >
-      </v-form>
-    </v-tab-item>
-  </v-tabs>
+          <v-btn
+            block
+            color="rgb(109, 199, 109)"
+            dark
+            @click="save"
+            :loading="load"
+            >Submit</v-btn
+          >
+        </v-form>
+      </v-tab-item>
+    </v-tabs>
+  </div>
 </template>
 
 <script>
@@ -87,12 +96,14 @@ export default {
       name: "",
       email: "",
       address: "",
+      cost: "",
     },
 
     GuestHome: {
       name: "",
       contact: "",
       address: "",
+      cost: "",
     },
 
     load: null,
@@ -171,6 +182,12 @@ export default {
 </script>
 
 <style scoped>
+.board {
+  width: 100%;
+  height: 100%;
+  padding: 40px;
+  background-color: whitesmoke;
+}
 .v-form {
   border-radius: 5px;
   width: 60%;

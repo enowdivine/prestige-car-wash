@@ -2,7 +2,7 @@
   <v-data-table
     :headers="headers"
     :items="guestclients"
-    sort-by="name"
+    :loading="load"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -44,27 +44,50 @@
                   label="Address"
                 ></v-text-field>
 
-                <v-text-field
-                  color="rgb(109, 199, 109)"
+                <v-select
+                  :items="gender"
                   v-model="editedItem.gender"
                   label="Gender"
-                ></v-text-field>
-
-                <v-text-field
                   color="rgb(109, 199, 109)"
+                ></v-select>
+
+                <v-select
+                  :items="requiredServices"
                   v-model="editedItem.service"
-                  label="Service"
+                  label="Required Service"
+                  color="rgb(109, 199, 109)"
+                ></v-select>
+
+                <v-select
+                  v-if="editedItem.service == 'Rentals'"
+                  :items="carTypeString"
+                  v-model="editedItem.car_type"
+                  label="Car Type"
+                  color="rgb(109, 199, 109)"
+                ></v-select>
+
+                <v-text-field
+                  v-if="editedItem.service == 'Rentals'"
+                  color="rgb(109, 199, 109)"
+                  v-model="editedItem.cost"
+                  label="Price"
+                  required
                 ></v-text-field>
 
                 <v-text-field
+                  v-if="editedItem.service == 'Repairs'"
                   color="rgb(109, 199, 109)"
                   v-model="editedItem.car_number"
                   label="Car Number"
+                  required
                 ></v-text-field>
+
                 <v-text-field
+                  v-if="editedItem.service == 'Repairs'"
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.car_type"
-                  label="Car Type"
+                  v-model="editedItem.cost"
+                  label="Price"
+                  required
                 ></v-text-field>
               </v-container>
             </v-card-text>
@@ -95,7 +118,11 @@
               <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
                 >Cancel</v-btn
               >
-              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="deleteItemConfirm"
+                :loading="load"
                 >OK</v-btn
               >
               <v-spacer></v-spacer>
@@ -120,7 +147,10 @@ axios.defaults.headers.common["Authorization"] =
 
 export default {
   data: () => ({
-    serviceString: [],
+    requiredServices: ["Rentals", "Repairs"],
+    gender: ["Male", "Female"],
+    car_types: [],
+    carTypeString: [],
     action: "add", // add functionality for adding customers
     dialog: false,
     dialogDelete: false,
@@ -169,13 +199,11 @@ export default {
 
   computed: {
     chooseService() {
-      if (Array.isArray(this.car_type) && this.car_type.length) {
-        this.car_types.forEach((car_type) => {
-          if (this.editedItem.car_type == car_type.name) {
-            this.editedItem.rental_price = car_type.rental_price;
-          }
-        });
-      }
+      this.car_types.forEach((car) => {
+        if (this.editedItem.car_type == car.name) {
+          this.editedItem.cost = car.rental_price;
+        }
+      });
       return true;
     },
   },
@@ -195,7 +223,7 @@ export default {
       this.car_types = res.data;
     });
     this.car_types.forEach((car_type) => {
-      this.serviceString.push(car_type.name);
+      this.carTypeString.push(car_type.name);
     });
   },
 
@@ -244,10 +272,12 @@ export default {
 
     //get guestclients
     getGuestClients() {
+      this.load = true;
       axios
         .get("/guest/get_car_rental_and_repair")
         .then((res) => {
           this.guestclients = res.data.reverse();
+          this.load = false;
           this.close();
         })
         .catch((err) => {

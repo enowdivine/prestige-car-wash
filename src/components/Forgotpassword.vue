@@ -8,7 +8,13 @@
       v-model="infoData.email"
       outlined
     ></v-text-field>
-    <v-btn color="rgb(109, 199, 109)" @click="reset" depressed dark block
+    <v-btn
+      color="rgb(109, 199, 109)"
+      @click="reset"
+      depressed
+      dark
+      block
+      :loading="load"
       >Submit</v-btn
     >
     <br />
@@ -34,20 +40,17 @@ export default {
   }),
   methods: {
     reset() {
-      axios
-        .get("/auth/get_admins")
-        .then((res) => {
-          this.admins = res.data.reverse();
-          if (this.infoData.email == this.admins.email) {
-            this.emit("reset");
-          } else {
-            // this.msg = "Email not recognized";
-            alert("i do not know you, so get out");
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      this.load = true;
+      let payload = this.editedItem; //@click reset password
+      axios.post("/auth/recoverPasword", payload).then(async (res) => {
+        if (res.data.success) {
+          this.loader = false;
+          this.$emit("reset");
+        } else {
+          this.load = false;
+          this.msg = "Unidentified Email";
+        }
+      });
     },
     back() {
       this.$emit("know");

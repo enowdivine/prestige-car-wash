@@ -1,88 +1,98 @@
 <template>
-  <v-data-table
-    :headers="headers"
-    :items="admins"
-    sort-by="name"
-    class="elevation-1"
-  >
-    <template v-slot:top>
-      <v-toolbar flat>
-        <v-spacer></v-spacer>
-        <v-dialog v-model="dialog" max-width="500px">
-          <v-card>
-            <v-card-text>
-              <v-container>
-                <v-text-field
-                  v-model="editedItem.name"
-                  label="Name"
-                ></v-text-field>
+  <div class="board">
+    <v-data-table
+      :headers="headers"
+      :items="admins"
+      sort-by="name"
+      :loading="load"
+      class="elevation-1"
+    >
+      <template v-slot:top>
+        <v-toolbar flat>
+          <v-spacer></v-spacer>
+          <v-dialog v-model="dialog" max-width="500px">
+            <v-card>
+              <v-card-text>
+                <v-container>
+                  <v-text-field
+                    v-model="editedItem.name"
+                    label="Name"
+                  ></v-text-field>
 
-                <v-text-field
-                  v-model="editedItem.contact"
-                  label="Phone Number"
-                ></v-text-field>
+                  <v-text-field
+                    v-model="editedItem.contact"
+                    label="Phone Number"
+                  ></v-text-field>
 
-                <v-text-field
-                  v-model="editedItem.email"
-                  label="Email"
-                ></v-text-field>
+                  <v-text-field
+                    v-model="editedItem.email"
+                    label="Email"
+                  ></v-text-field>
 
-                <v-text-field
-                  v-model="editedItem.address"
-                  label="Address"
-                ></v-text-field>
+                  <v-text-field
+                    v-model="editedItem.address"
+                    label="Address"
+                  ></v-text-field>
 
-                <v-text-field
-                  v-model="editedItem.gender"
-                  label="Gender"
-                ></v-text-field>
-              </v-container>
-            </v-card-text>
+                  <v-text-field
+                    v-model="editedItem.gender"
+                    label="Gender"
+                  ></v-text-field>
+                </v-container>
+              </v-card-text>
 
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="rgb(109, 199, 109)" text @click="close">
-                Cancel
-              </v-btn>
-              <v-btn
-                color="rgb(109, 199, 109)"
-                text
-                @click="save"
-                :loading="load"
-                load
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="rgb(109, 199, 109)" text @click="close">
+                  Cancel
+                </v-btn>
+                <v-btn
+                  color="rgb(109, 199, 109)"
+                  text
+                  @click="save"
+                  :loading="load"
+                  load
+                >
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="dialogDelete" max-width="500px">
+            <v-card>
+              <v-card-title class="text-h5"
+                >Are you sure you want to delete this admin?</v-card-title
               >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="text-h5"
-              >Are you sure you want to delete this admin?</v-card-title
-            >
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
-                >Cancel</v-btn
-              >
-              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
-                >OK</v-btn
-              >
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-      </v-toolbar>
-    </template>
-    <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
-    </template>
-    <template v-slot:no-data>
-      <p>No data to show</p>
-    </template>
-  </v-data-table>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="rgb(109, 199, 109)"
+                  text
+                  @click="closeDelete"
+                  :loading="load"
+                  >Cancel</v-btn
+                >
+                <v-btn
+                  color="rgb(109, 199, 109)"
+                  text
+                  @click="deleteItemConfirm"
+                  :loading="load"
+                  >OK</v-btn
+                >
+                <v-spacer></v-spacer>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-toolbar>
+      </template>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      </template>
+      <template v-slot:no-data>
+        <p>No data to show</p>
+      </template>
+    </v-data-table>
+  </div>
 </template>
 
 <script>
@@ -107,7 +117,6 @@ export default {
       { text: "Email", value: "email" },
       { text: "Address", value: "address" },
       { text: "Gender", value: "gender" },
-      { text: "Password", value: "password" },
       { text: "Actions", value: "actions", sortable: false },
     ],
     admins: [],
@@ -118,7 +127,6 @@ export default {
       email: "",
       address: "",
       gender: "",
-      password: "",
     },
     defaultItem: {
       name: "",
@@ -126,7 +134,6 @@ export default {
       email: "",
       address: "",
       gender: "",
-      password: "",
     },
     load: null,
   }),
@@ -188,10 +195,12 @@ export default {
     },
 
     getAdmin() {
+      this.load = true;
       axios
         .get("/auth/get_admins")
         .then((res) => {
           this.admins = res.data.reverse();
+          this.load = false;
           this.close();
         })
         .catch((err) => {
@@ -237,8 +246,13 @@ export default {
 </script>
 
 <style scoped>
+.board {
+  width: 100%;
+  height: 100%;
+  padding: 40px;
+  background-color: whitesmoke;
+}
 .v-data-table {
   margin-bottom: 30px;
-  margin-left: 30px;
 }
 </style>

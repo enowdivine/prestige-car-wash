@@ -2,7 +2,7 @@
   <v-data-table
     :headers="headers"
     :items="registeredclients"
-    sort-by="name"
+    :loading="load"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -33,6 +33,12 @@
                   label="Name"
                 ></v-text-field>
 
+                <v-text-field
+                  color="rgb(109, 199, 109)"
+                  v-model="editedItem.email"
+                  label="Email"
+                ></v-text-field>
+
                 <v-select
                   :items="requiredServices"
                   v-model="editedItem.service"
@@ -41,6 +47,7 @@
                 ></v-select>
 
                 <v-select
+                  v-if="editedItem.service == 'Rentals'"
                   :items="serviceString"
                   v-model="editedItem.car_type"
                   label="Car Type"
@@ -48,8 +55,25 @@
                 ></v-select>
 
                 <v-text-field
+                  v-if="editedItem.service == 'Rentals'"
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.rental_price"
+                  v-model="editedItem.cost"
+                  label="Price"
+                  required
+                ></v-text-field>
+
+                <v-text-field
+                  v-if="editedItem.service == 'Repairs'"
+                  color="rgb(109, 199, 109)"
+                  v-model="editedItem.car_number"
+                  label="Car Number"
+                  required
+                ></v-text-field>
+
+                <v-text-field
+                  v-if="editedItem.service == 'Repairs'"
+                  color="rgb(109, 199, 109)"
+                  v-model="editedItem.cost"
                   label="Price"
                   required
                 ></v-text-field>
@@ -87,7 +111,11 @@
               <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
                 >Cancel</v-btn
               >
-              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="deleteItemConfirm"
+                :loading="load"
                 >OK</v-btn
               >
               <v-spacer></v-spacer>
@@ -113,7 +141,6 @@ axios.defaults.headers.common["Authorization"] =
 export default {
   data: () => ({
     requiredServices: ["Rentals", "Repairs"],
-    serviceString: [],
     dialog: false,
     dialogDelete: false,
     action: "add", // add functionality for adding customers
@@ -153,16 +180,14 @@ export default {
       return this.editedIndex === -1 ? "New Client" : "Edit Client";
     },
 
-    chooseService() {
-      if (this.car_types) {
-        this.car_types.forEach((car_type) => {
-          if (this.editedItem.car_type == car_type.name) {
-            this.editedItem.rental_price = car_type.rental_price;
-          }
-        });
-      }
-      return true;
-    },
+    // chooseService() {
+    //   this.car_types.forEach((car) => {
+    //     if (this.editedItem.car_type == car.name) {
+    //       this.editedItem.cost = car.rental_price;
+    //     }
+    //   });
+    //   return true;
+    // },
   },
 
   watch: {
@@ -229,10 +254,12 @@ export default {
 
     //get customers
     getCustomers() {
+      this.load = true;
       axios
         .get("/registered/get_car_rental_and_repair")
         .then((res) => {
           this.registeredclients = res.data.reverse();
+          this.load = false;
           this.close();
         })
         .catch((err) => {

@@ -5,6 +5,7 @@
     sort-by="name"
     class="elevation-1"
     :items-per-page="7"
+    :loading="load"
   >
     <template v-slot:top>
       <v-toolbar flat>
@@ -19,7 +20,11 @@
               <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
                 >Cancel</v-btn
               >
-              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="deleteItemConfirm"
+                :loading="load"
                 >OK</v-btn
               >
               <v-spacer></v-spacer>
@@ -56,6 +61,7 @@ export default {
         value: "name",
       },
       { text: "Service", value: "service", sortable: false },
+      { text: "Category", value: "category", sortable: false },
       { text: "Amount", value: "cost", sortable: false },
       { text: "Email", value: "email", sortable: false },
       { text: "Date", value: "date", sortable: false },
@@ -66,6 +72,7 @@ export default {
     editedItem: {
       name: "",
       service: "",
+      category: "",
       cost: "",
       email: "",
       date: 0,
@@ -73,10 +80,12 @@ export default {
     defaultItem: {
       name: "",
       service: "",
+      category: "",
       cost: "",
       email: "",
       date: 0,
     },
+    load: null,
   }),
 
   watch: {
@@ -94,10 +103,12 @@ export default {
 
   methods: {
     getRegisteredClients() {
+      this.load = true;
       axios
         .get("/registered/get_activities")
         .then((res) => {
           this.registeredclients = res.data.reverse();
+          this.load = false;
           this.close();
         })
         .catch((err) => {
@@ -118,11 +129,13 @@ export default {
     },
 
     deleteItemConfirm() {
+      this.load = true;
       axios
         .delete(`/registered/delete_activity/${this.editedItem._id}`)
         .then((res) => {
           if (res.data.success) {
             this.getRegisteredClients();
+            this.load = false;
             this.closeDelete();
           }
         });

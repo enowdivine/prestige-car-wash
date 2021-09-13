@@ -25,12 +25,12 @@ export default {
   align-items: center;
   height: 100vh;
 }
-.left{
+.left {
   height: 100vh;
   background-color: rgb(109, 199, 109);
   width: 70%;
 }
-.form{
+.form {
   position: absolute;
 }
 </style>

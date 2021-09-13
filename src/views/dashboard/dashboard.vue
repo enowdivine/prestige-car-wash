@@ -50,7 +50,7 @@
         </v-tab>
         <v-tab>
           <v-icon left> mdi-truck-check </v-icon>
-          <span>Prestige Franchising</span>
+          <span>Prestige Shop</span>
         </v-tab>
         <v-tab>
           <v-icon left> mdi-gift </v-icon>
@@ -98,7 +98,7 @@
               <h2 class="regCustomer">Car Detailing</h2>
             </div>
             <div class="scroller">
-              <Registercustomer />
+              <Cardetailing />
             </div>
           </v-container>
         </v-card>
@@ -155,10 +155,10 @@
         <v-card flat>
           <v-container>
             <div>
-              <h2 class="regCustomer">Prestige Franchising</h2>
+              <h2 class="regCustomer">Prestige Shop</h2>
             </div>
             <div class="scroller">
-              <Franchising />
+              <Shop />
             </div>
           </v-container>
         </v-card>
@@ -219,7 +219,7 @@
 </template>
 
 <script>
-import Registercustomer from "../../components/Registercustomer";
+import Cardetailing from "../../components/Cardetailing";
 import Statistics from "../../components/Statistics";
 import Viewcustomers from "../../components/Viewcustomers";
 import Profile from "../../components/Profile";
@@ -230,15 +230,15 @@ import Prestigeacademy from "../../components/Prestigeacademy.vue";
 import Rentalsandrepairs from "../../components/Rentalsandrepairs.vue";
 import Service from "../../components/Service.vue";
 import Cartype from "../../components/Cartype.vue";
-import Franchising from "../../components/Franchising.vue";
+import Shop from "../../components/Shop.vue";
 import { mapGetters } from "vuex";
 export default {
   name: "dashboard",
   components: {
-    Registercustomer,
+    Cardetailing,
     Statistics,
     Viewcustomers,
-    Franchising,
+    Shop,
     Profile,
     Packages,
     Homecleaning,
@@ -306,11 +306,15 @@ h4 {
   float: left;
   padding: 19px 0 0 10px;
 }
+.v-tab-item {
+  padding-bottom: 50px;
+}
 .regCustomer {
   margin: 20px auto;
   color: rgb(109, 199, 109);
 }
 .scroller {
+  background-color: whitesmoke;
   padding: 20px;
   height: 100vh;
   overflow-y: scroll;

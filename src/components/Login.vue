@@ -92,7 +92,7 @@ export default {
       },
       rules: {
         required: (value) => !!value || "Required.",
-        min: (v) => v.length >= 8 || "Min 8 characters",
+        min: (v) => v.length >= 5 || "Min 5 characters",
         email: (value) => {
           const pattern =
             /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -109,9 +109,9 @@ export default {
     async check() {
       this.load = true;
       if (this.user.email && this.user.password) {
-        if (this.user.password.length < 8) {
+        if (this.user.password.length < 5) {
           this.load = false;
-          this.msg = "Minimum 8 characters required";
+          this.msg = "Minimum 5 characters required";
         } else {
           let login = await this.login(this.user);
           if (login.success) {
