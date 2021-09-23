@@ -41,7 +41,6 @@
             <v-card-text>
               <v-container>
                 <v-select
-                  :items="serviceString"
                   v-model="editedItem.name"
                   label="Name"
                   color="rgb(109, 199, 109)"

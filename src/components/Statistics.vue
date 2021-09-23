@@ -4,8 +4,8 @@
       <v-row>
         <div class="left">
           <div class="row1">
-            <div class="one"><One /></div>
-            <div class="two"><Two /></div>
+            <!-- <div class="one"><One /></div>
+            <div class="two"><Two /></div> -->
           </div>
           <div class="row2">
             <div class="three"><Three /></div>
@@ -44,8 +44,8 @@
 </template>
 
 <script>
-import One from "./One";
-import Two from "./Two";
+// import One from "./One";
+// import Two from "./Two";
 import Three from "./Three";
 import Four from "./Four";
 import Five from "./Five";
@@ -53,8 +53,8 @@ import Graph from "./Graph";
 
 export default {
   components: {
-    One,
-    Two,
+    // One,
+    // Two,
     Three,
     Four,
     Five,

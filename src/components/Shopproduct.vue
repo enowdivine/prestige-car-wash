@@ -3,7 +3,8 @@
     :headers="headers"
     :items="products"
     :search="search"
-    sort-by="calories"
+    :loading="load"
+    sort-by="productName"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -42,26 +43,20 @@
               <v-container>
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.name"
-                  label="Car number"
+                  v-model="editedItem.productName"
+                  label="Product Name"
                   required
                 ></v-text-field>
                 <v-text-field
                   color="rgb(109, 199, 109)"
                   v-model="editedItem.quantity"
-                  label="Car Type"
+                  label="Quantity"
                   required
                 ></v-text-field>
                 <v-text-field
                   color="rgb(109, 199, 109)"
-                  v-model="editedItem.unit_price"
-                  label="Color"
-                  required
-                ></v-text-field>
-                <v-text-field
-                  color="rgb(109, 199, 109)"
-                  v-model="editedItem.in_stock"
-                  label="Remark"
+                  v-model="editedItem.unitPrice"
+                  label="Unit Price"
                   required
                 ></v-text-field>
               </v-container>
@@ -72,7 +67,12 @@
               <v-btn color="rgb(109, 199, 109)" text @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="rgb(109, 199, 109)" text @click="save">
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                :loading="load"
+                @click="save"
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -88,7 +88,11 @@
               <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
                 >Cancel</v-btn
               >
-              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                :loading="load"
+                @click="deleteItemConfirm"
                 >OK</v-btn
               >
               <v-spacer></v-spacer>
@@ -97,9 +101,9 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:[`item.carbs`]="{ item }">
-      <v-chip :color="getColor(item.carbs)" dark>
-        {{ item.carbs }}
+    <template v-slot:[`item.quantity`]="{ item }">
+      <v-chip :color="getColor(item.quantity)" dark>
+        {{ item.quantity }}
       </v-chip>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
@@ -113,40 +117,43 @@
 </template>
 
 <script>
+import axios from "axios";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
 export default {
   data: () => ({
     search: "",
     dialog: false,
     dialogDelete: false,
+    action: "add",
 
     headers: [
       {
         text: "Name",
         align: "start",
         sortable: false,
-        value: "name",
+        value: "productName",
       },
-      { text: "Quantity", value: "calories" },
-      { text: "Unit Price", value: "fat" },
-      { text: "In Stock", value: "carbs" },
+      { text: "Quantity", value: "quantity" },
+      { text: "Unit Price", value: "unitPrice" },
+      { text: "Date", value: "date" },
       { text: "Actions", value: "actions", sortable: false },
     ],
     products: [],
     editedIndex: -1,
     editedItem: {
-      name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
+      productName: "",
+      quantity: 0,
+      unitPrice: 0,
+      date: "",
     },
     defaultItem: {
-      name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
+      productName: "",
+      quantity: 0,
+      unitPrice: 0,
+      date: "",
     },
+    load: null,
   }),
 
   computed: {
@@ -164,93 +171,74 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  beforeMount() {
+    this.getProducts();
   },
 
   methods: {
-    initialize() {
-      this.products = [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-        },
-        {
-          name: "Jelly bean",
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-        },
-        {
-          name: "Lollipop",
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-        },
-        {
-          name: "Honeycomb",
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-        },
-        {
-          name: "Donut",
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-        },
-        {
-          name: "KitKat",
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-        },
-      ];
+    save() {
+      this.load = true;
+      // add customer
+      if (this.action == "add") {
+        let payload = this.editedItem; //@click add customer
+        axios
+          .post("/shop/register_product", payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              await this.getProducts();
+              this.load = false;
+            }
+          })
+          .catch((err) => {
+            this.load = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
+
+      if (this.action == "edit") {
+        let payload = this.editedItem;
+        axios
+          .put(`/shop/edit_product/${payload._id}`, payload)
+          .then(async (res) => {
+            if (res.data.success) {
+              alert("successful");
+              await this.getProducts();
+              this.action = "add";
+              this.load = false;
+            }
+          })
+          .catch((err) => {
+            this.load = false;
+            console.log(err);
+            this.msg = "Something went wrong !!";
+          });
+      }
     },
 
-    getColor(carbs) {
-      if (carbs > 80) return "red";
-      else if (carbs > 40) return "orange";
+    getProducts() {
+      this.load = true;
+      axios
+        .get("/shop/get_products")
+        .then((res) => {
+          this.products = res.data.reverse();
+          this.load = false;
+          this.close();
+        })
+        .catch((err) => {
+          this.load = false;
+          console.log(err);
+        });
+    },
+
+    getColor(quantity) {
+      if (quantity > 80) return "red";
+      else if (quantity > 40) return "orange";
       else return "green";
     },
 
     editItem(item) {
+      this.action = "edit";
       this.editedIndex = this.products.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
@@ -263,8 +251,16 @@ export default {
     },
 
     deleteItemConfirm() {
-      this.products.splice(this.editedIndex, 1);
-      this.closeDelete();
+      this.load = true;
+      axios
+        .delete(`/shop/delete_product/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getProducts();
+            this.load = false;
+            this.closeDelete();
+          }
+        });
     },
 
     close() {
@@ -281,15 +277,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.products[this.editedIndex], this.editedItem);
-      } else {
-        this.products.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };

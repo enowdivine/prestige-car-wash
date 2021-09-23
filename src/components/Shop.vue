@@ -9,8 +9,6 @@
 
       <v-tab-item>
         <Shopproduct />
-
-        <span v-show="false"> {{ chooseService }} </span>
       </v-tab-item>
     </v-tabs>
   </div>

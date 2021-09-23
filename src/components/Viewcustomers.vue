@@ -217,7 +217,6 @@ export default {
         axios
           .put(`/customer/edit_customer/${payload._id}`, payload)
           .then(async (res) => {
-            console.log(res.data);
             if (res.data.success) {
               await this.getCustomers();
               this.action = "add";
@@ -247,7 +246,7 @@ export default {
     },
 
     editItem(item) {
-      this.action = "edit"; //@click to edit customer
+      this.action = "edit";
       this.editedIndex = this.customers.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;

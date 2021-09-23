@@ -1,10 +1,11 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="desserts"
+    :items="guestClients"
     :search="search"
     sort-by="calories"
     class="elevation-1"
+    :loadind="load"
   >
     <template v-slot:top>
       <v-toolbar flat>
@@ -40,33 +41,77 @@
             <v-card-text>
               <v-container>
                 <v-text-field
+                  v-model="editedItem.carNumber"
+                  label="Car Number"
+                  color="rgb(109, 199, 109)"
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="editedItem.carType"
+                  label="Car Type"
+                  color="rgb(109, 199, 109)"
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="editedItem.color"
+                  color="rgb(109, 199, 109)"
+                  label="Color"
+                ></v-text-field>
+
+                <v-select
+                  v-model="editedItem.service"
+                  :items="serviceString"
+                  color="rgb(109, 199, 109)"
+                  label="Service"
+                ></v-select>
+
+                <v-text-field
+                  v-model="editedItem.remark"
+                  color="rgb(109, 199, 109)"
+                  label="Remark"
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="editedItem.cost"
+                  color="rgb(109, 199, 109)"
+                  label="Amount"
+                ></v-text-field>
+
+                <v-text-field
                   v-model="editedItem.name"
-                  label="Dessert name"
                   color="rgb(109, 199, 109)"
+                  label="Name"
                 ></v-text-field>
 
                 <v-text-field
-                  v-model="editedItem.calories"
-                  label="Calories"
+                  v-model="editedItem.contact"
                   color="rgb(109, 199, 109)"
+                  label="Contact"
                 ></v-text-field>
 
                 <v-text-field
-                  v-model="editedItem.fat"
+                  v-model="editedItem.email"
                   color="rgb(109, 199, 109)"
-                  label="Fat (g)"
+                  label="Email"
                 ></v-text-field>
 
                 <v-text-field
-                  v-model="editedItem.carbs"
+                  v-model="editedItem.address"
                   color="rgb(109, 199, 109)"
-                  label="Carbs (g)"
+                  label="Address"
                 ></v-text-field>
 
-                <v-text-field
-                  v-model="editedItem.protein"
+                <v-select
+                  :items="gender"
+                  v-model="editedItem.gender"
                   color="rgb(109, 199, 109)"
-                  label="Protein (g)"
+                  label="Gender"
+                ></v-select>
+
+                <v-text-field
+                  v-model="editedItem.dateOfBirth"
+                  color="rgb(109, 199, 109)"
+                  label="Date of birth"
                 ></v-text-field>
               </v-container>
             </v-card-text>
@@ -76,7 +121,12 @@
               <v-btn color="rgb(109, 199, 109)" text @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="rgb(109, 199, 109)" text @click="save">
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                :loading="load"
+                @click="save"
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -92,7 +142,11 @@
               <v-btn color="rgb(109, 199, 109)" text @click="closeDelete"
                 >Cancel</v-btn
               >
-              <v-btn color="rgb(109, 199, 109)" text @click="deleteItemConfirm"
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                :loading="load"
+                @click="deleteItemConfirm"
                 >OK</v-btn
               >
               <v-spacer></v-spacer>
@@ -102,18 +156,24 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
       <p>No Data To Show</p>
     </template>
+    <span v-show="false">{{ chooseService }}</span>
   </v-data-table>
 </template>
 
 <script>
+import axios from "axios";
+axios.defaults.headers.common["Authorization"] =
+  "Bearer " + localStorage.getItem("token");
 export default {
   data: () => ({
+    gender: ["Male", "Female"],
+    serviceString: [],
+    services: [],
     search: "",
     dialog: false,
     dialogDelete: false,
@@ -122,45 +182,75 @@ export default {
         text: "Car Number",
         align: "start",
         sortable: false,
-        value: "name",
+        value: "carNumber",
       },
-      { text: "Car Type", value: "calories" },
-      { text: "Color", value: "fat" },
-      { text: "Service", value: "carbs" },
-      { text: "Remark", value: "protein" },
-      { text: "Amount", value: "protein" },
-      { text: "Count", value: "protein" },
-      { text: "Date", value: "protein" },
-      { text: "Time", value: "protein" },
-      { text: "Name", value: "protein" },
-      { text: "Contact", value: "protein" },
-      { text: "Email", value: "protein" },
-      { text: "Address", value: "protein" },
-      { text: "Gender", value: "protein" },
-      { text: "Birth Date", value: "protein" },
+      { text: "Car Type", value: "carType" },
+      { text: "Color", value: "color" },
+      { text: "Service", value: "service" },
+      { text: "Remark", value: "remark" },
+      { text: "Amount", value: "cost" },
+      { text: "Count", value: "count" },
+      { text: "Date", value: "date" },
+      { text: "Time", value: "time" },
+      { text: "Name", value: "name" },
+      { text: "Contact", value: "contact" },
+      { text: "Email", value: "email" },
+      { text: "Address", value: "address" },
+      { text: "Gender", value: "gender" },
+      { text: "Birth Date", value: "dateOfBirth" },
       { text: "Actions", value: "actions", sortable: false },
     ],
-    desserts: [],
+    guestClients: [],
     editedIndex: -1,
     editedItem: {
+      carType: "",
+      carNumber: "",
+      color: "",
+      service: "",
+      remark: "",
       name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
+      email: "",
+      contact: "",
+      address: "",
+      dateOfBirth: "",
+      cost: 0,
+      time: "",
+      date: "",
+      gender: "",
+      count: 0,
     },
     defaultItem: {
+      carType: "",
+      carNumber: "",
+      color: "",
+      service: "",
+      remark: "",
       name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
+      email: "",
+      contact: "",
+      address: "",
+      dateOfBirth: "",
+      cost: 0,
+      time: "",
+      date: "",
+      gender: "",
+      count: 0,
     },
+    load: null,
   }),
 
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Client" : "Edit Client";
+    },
+
+    chooseService() {
+      this.services.forEach((service) => {
+        if (this.editedItem.service == service.name) {
+          this.editedItem.cost = service.price;
+        }
+      });
+      return true;
     },
   },
 
@@ -173,101 +263,70 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
+  async beforeMount() {
+    this.getGuestClients();
+    await axios.get("/settings/get_services").then((res) => {
+      this.services = res.data;
+    });
+    this.services.forEach((service) => {
+      this.serviceString.push(service.name);
+    });
   },
 
   methods: {
-    initialize() {
-      this.desserts = [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-        },
-        {
-          name: "Jelly bean",
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-        },
-        {
-          name: "Lollipop",
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-        },
-        {
-          name: "Honeycomb",
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-        },
-        {
-          name: "Donut",
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-        },
-        {
-          name: "KitKat",
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-        },
-      ];
+    save() {
+      this.load = true;
+      axios
+        .post("/guest/create_activity", this.editedItem)
+        .then(async (res) => {
+          if (res.data.success) {
+            alert("Successful");
+            await this.getGuestClients();
+            this.load = false;
+          }
+        })
+        .catch((err) => {
+          this.load = false;
+          console.log(err);
+          this.msg = "something went wrong";
+        });
     },
 
-    editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+    getGuestClients() {
+      this.load = true;
+      axios
+        .get("/guest/get_activities")
+        .then((res) => {
+          this.guestClients = res.data.reverse();
+          this.load = false;
+          this.close();
+        })
+        .catch((err) => {
+          this.load = false;
+          console.log(err);
+        });
     },
 
     deleteItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
+      this.editedIndex = this.guestClients.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
-      this.closeDelete();
+      this.load = true;
+      axios
+        .delete(`/guest/delete_activity/${this.editedItem._id}`)
+        .then((res) => {
+          if (res.data.success) {
+            this.getGuestClients();
+            this.load = false;
+            this.closeDelete();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
 
     close() {
@@ -284,15 +343,6 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      } else {
-        this.desserts.push(this.editedItem);
-      }
-      this.close();
     },
   },
 };
