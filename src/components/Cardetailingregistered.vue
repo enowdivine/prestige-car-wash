@@ -110,6 +110,15 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
+      <v-btn
+        small
+        class="mr-2"
+        @click="sendEmail(item)"
+        :loading="load"
+        rounded
+      >
+        <v-icon small> mdi-email </v-icon>
+      </v-btn>
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
@@ -234,6 +243,25 @@ export default {
           this.load = false;
           console.log(err);
           this.msg = "something went wrong";
+        });
+    },
+
+    sendEmail(item) {
+      console.log("send email");
+      this.load = true;
+      axios
+        .post("/registered/email_client", item)
+        .then((res) => {
+          if (res.data.success) {
+            alert("Message sent to client");
+            this.load = false;
+          }
+        })
+        .catch((err) => {
+          this.load = false;
+          alert("Failed");
+          this.msg = "Something went wrong";
+          console.log(err);
         });
     },
 

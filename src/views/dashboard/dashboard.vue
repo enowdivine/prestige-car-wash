@@ -21,10 +21,6 @@
     <v-tabs vertical color="rgb(109, 199, 109)">
       <div class="tabs">
         <v-tab>
-          <v-icon left> mdi-finance </v-icon>
-          <span>Statistics</span>
-        </v-tab>
-        <v-tab>
           <v-icon left> mdi-account-cash </v-icon>
           <span>Clients</span>
         </v-tab>
@@ -70,15 +66,6 @@
         </v-tab>
       </div>
 
-      <v-tab-item>
-        <v-card flat>
-          <v-container>
-            <div class="scroller">
-              <Statistics />
-            </div>
-          </v-container>
-        </v-card>
-      </v-tab-item>
       <v-tab-item>
         <v-card flat>
           <v-container>
@@ -220,7 +207,7 @@
 
 <script>
 import Cardetailing from "../../components/Cardetailing";
-import Statistics from "../../components/Statistics";
+
 import Viewcustomers from "../../components/Viewcustomers";
 import Profile from "../../components/Profile";
 import Packages from "../../components/Packages";
@@ -236,7 +223,7 @@ export default {
   name: "dashboard",
   components: {
     Cardetailing,
-    Statistics,
+
     Viewcustomers,
     Shop,
     Profile,
