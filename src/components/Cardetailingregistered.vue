@@ -107,18 +107,32 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <v-dialog v-model="dialogMsg" max-width="500px">
+          <v-card>
+            <v-card-title class="text-h5">Send Message To Client</v-card-title>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="rgb(109, 199, 109)" text @click="closedialogMsg"
+                >Cancel</v-btn
+              >
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                :loading="load"
+                @click="sendMsg"
+                >OK</v-btn
+              >
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-btn
-        small
-        class="mr-2"
-        @click="sendEmail(item)"
-        :loading="load"
-        rounded
-      >
-        <v-icon small> mdi-email </v-icon>
-      </v-btn>
+      <v-icon small @click="openMsg(item)" color="rgb(109, 199, 109)">
+        mdi-email
+      </v-icon>
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
@@ -137,6 +151,7 @@ export default {
     serviceString: [],
     services: [],
     search: "",
+    dialogMsg: false,
     dialog: false,
     dialogDelete: false,
 
@@ -149,7 +164,7 @@ export default {
       },
       { text: "Email", value: "email" },
       { text: "Service", value: "service" },
-      { text: "Category", value: "category" },
+      { text: "Count", value: "count" },
       { text: "Amount", value: "cost" },
       { text: "Date", value: "date" },
       { text: "Time", value: "time" },
@@ -159,19 +174,19 @@ export default {
     editedIndex: -1,
     editedItem: {
       service: "",
-      category: "",
       name: "",
       email: "",
       cost: 0,
+      count: 0,
       time: "",
       date: "",
     },
     defaultItem: {
       service: "",
-      category: "",
       name: "",
       email: "",
       cost: 0,
+      count: 0,
       time: "",
       date: "",
     },
@@ -184,7 +199,7 @@ export default {
     },
 
     chooseService() {
-      this.services.forEach((service) => {
+      [...this.services].forEach((service) => {
         if (this.editedItem.service == service.name) {
           this.editedItem.cost = service.price;
         }
@@ -207,7 +222,7 @@ export default {
     await axios.get("/settings/get_services").then((res) => {
       this.services = res.data;
     });
-    this.services.forEach((service) => {
+    [...this.services].forEach((service) => {
       this.serviceString.push(service.name);
     });
   },
@@ -223,6 +238,7 @@ export default {
           this.close();
         })
         .catch((err) => {
+          this.load = false;
           console.log(err);
         });
     },
@@ -246,21 +262,33 @@ export default {
         });
     },
 
-    sendEmail(item) {
-      console.log("send email");
+    openMsg(item) {
+      this.editedIndex = this.registeredClients.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogMsg = true;
+    },
+
+    closedialogMsg() {
+      this.dialogMsg = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    sendMsg() {
       this.load = true;
       axios
-        .post("/registered/email_client", item)
+        .post("/registered/email_client")
         .then((res) => {
           if (res.data.success) {
-            alert("Message sent to client");
+            alert("Message sent succesfully");
             this.load = false;
           }
         })
         .catch((err) => {
           this.load = false;
-          alert("Failed");
-          this.msg = "Something went wrong";
+          alert("Something went wrong");
           console.log(err);
         });
     },

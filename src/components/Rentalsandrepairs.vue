@@ -32,7 +32,7 @@ export default {
 .board {
   width: 100%;
   height: 100%;
-  padding: 40px;
+  padding: 20px;
   background-color: whitesmoke;
 }
 .v-form {

@@ -37,12 +37,6 @@
 
                   <v-text-field
                     color="rgb(109, 199, 109)"
-                    v-model="editedItem.period"
-                    label="Period"
-                  ></v-text-field>
-
-                  <v-text-field
-                    color="rgb(109, 199, 109)"
                     v-model="editedItem.price"
                     label="Price"
                   ></v-text-field>
@@ -118,7 +112,7 @@ export default {
         sortable: false,
         value: "name",
       },
-      { text: "Period", value: "period" },
+
       { text: "Price (FCFA)", value: "price" },
       { text: "Actions", value: "actions", sortable: false },
     ],
@@ -126,12 +120,12 @@ export default {
     editedIndex: -1,
     editedItem: {
       name: "",
-      period: "",
+
       price: "",
     },
     defaultItem: {
       name: "",
-      period: "",
+
       price: "",
     },
     load: null,

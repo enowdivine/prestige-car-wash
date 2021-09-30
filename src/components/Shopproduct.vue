@@ -232,8 +232,8 @@ export default {
     },
 
     getColor(quantity) {
-      if (quantity > 80) return "red";
-      else if (quantity > 40) return "orange";
+      if (quantity < 10) return "red";
+      else if (quantity < 20) return "orange";
       else return "green";
     },
 

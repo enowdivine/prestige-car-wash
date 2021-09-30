@@ -114,6 +114,7 @@ export default {
         value: "name",
       },
       { text: "Email", value: "email" },
+      { text: "Count", value: "count" },
       { text: "Address", value: "address" },
       { text: "Date", value: "date" },
       { text: "Time", value: "time" },
@@ -124,6 +125,7 @@ export default {
     editedItem: {
       name: "",
       email: "",
+      count: "",
       address: "",
       date: "",
       time: "",
@@ -131,6 +133,7 @@ export default {
     defaultItem: {
       name: "",
       email: "",
+      count: "",
       address: "",
       date: "",
       time: "",

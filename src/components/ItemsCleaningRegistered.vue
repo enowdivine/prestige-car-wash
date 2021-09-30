@@ -39,12 +39,6 @@
                     v-model="editedItem.email"
                     label="Email"
                   ></v-text-field>
-
-                  <v-text-field
-                    color="rgb(109, 199, 109)"
-                    v-model="editedItem.address"
-                    label="Address"
-                  ></v-text-field>
                 </v-container>
               </v-card-text>
 
@@ -114,7 +108,8 @@ export default {
         value: "name",
       },
       { text: "Email", value: "email" },
-      { text: "Address", value: "address" },
+
+      { text: "Count", value: "count" },
       { text: "Date", value: "date" },
       { text: "Time", value: "time" },
       { text: "Actions", value: "actions", sortable: false },
@@ -124,16 +119,18 @@ export default {
     editedItem: {
       name: "",
       email: "",
-      address: "",
+
       date: "",
       time: "",
+      count: 0,
     },
     defaultItem: {
       name: "",
       email: "",
-      address: "",
+
       date: "",
       time: "",
+      count: 0,
     },
     loader: false,
   }),
@@ -190,6 +187,7 @@ export default {
           this.close();
         })
         .catch((err) => {
+          this.loader = false;
           console.log(err);
         });
     },

@@ -153,9 +153,33 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <v-dialog v-model="dialogMsg" max-width="500px">
+          <v-card>
+            <v-card-title class="text-h5">Send Message To Client</v-card-title>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="rgb(109, 199, 109)" text @click="closedialogMsg"
+                >Cancel</v-btn
+              >
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                :loading="load"
+                @click="sendMsg"
+                >OK</v-btn
+              >
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-toolbar>
     </template>
+
     <template v-slot:[`item.actions`]="{ item }">
+      <v-icon small @click="openMsg(item)" color="rgb(109, 199, 109)">
+        mdi-email
+      </v-icon>
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
@@ -175,6 +199,7 @@ export default {
     serviceString: [],
     services: [],
     search: "",
+    dialogMsg: false,
     dialog: false,
     dialogDelete: false,
     headers: [
@@ -245,7 +270,7 @@ export default {
     },
 
     chooseService() {
-      this.services.forEach((service) => {
+      [...this.services].forEach((service) => {
         if (this.editedItem.service == service.name) {
           this.editedItem.cost = service.price;
         }
@@ -268,7 +293,7 @@ export default {
     await axios.get("/settings/get_services").then((res) => {
       this.services = res.data;
     });
-    this.services.forEach((service) => {
+    [...this.services].forEach((service) => {
       this.serviceString.push(service.name);
     });
   },
@@ -325,6 +350,37 @@ export default {
           }
         })
         .catch((err) => {
+          console.log(err);
+        });
+    },
+
+    openMsg(item) {
+      this.editedIndex = this.guestClients.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogMsg = true;
+    },
+
+    closedialogMsg() {
+      this.dialogMsg = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    sendMsg() {
+      this.load = true;
+      axios
+        .post("/guest/email_client")
+        .then((res) => {
+          if (res.data.success) {
+            alert("Message sent succesfully");
+            this.load = false;
+          }
+        })
+        .catch((err) => {
+          this.load = false;
+          alert("Something went wrong");
           console.log(err);
         });
     },

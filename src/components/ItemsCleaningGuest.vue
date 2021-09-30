@@ -31,29 +31,19 @@
                   <v-text-field
                     color="rgb(109, 199, 109)"
                     v-model="editedItem.name"
-                    outlined
                     label="Name"
                     required
                   ></v-text-field>
                   <v-text-field
                     color="rgb(109, 199, 109)"
                     v-model="editedItem.contact"
-                    outlined
                     label="Contact"
                     required
                   ></v-text-field>
                   <v-text-field
                     color="rgb(109, 199, 109)"
                     v-model="editedItem.address"
-                    outlined
                     label="Address"
-                    required
-                  ></v-text-field>
-                  <v-text-field
-                    color="rgb(109, 199, 109)"
-                    v-model="editedItem.cost"
-                    outlined
-                    label="Amount"
                     required
                   ></v-text-field>
                 </v-container>
@@ -124,8 +114,9 @@ export default {
         sortable: false,
         value: "name",
       },
-      { text: "Email", value: "email" },
+      { text: "Contact", value: "contact" },
       { text: "Address", value: "address" },
+      { text: "Amount", value: "cost" },
       { text: "Date", value: "date" },
       { text: "Time", value: "time" },
       { text: "Actions", value: "actions", sortable: false },
@@ -134,17 +125,19 @@ export default {
     editedIndex: -1,
     editedItem: {
       name: "",
-      email: "",
+      contact: "",
       address: "",
       date: "",
       time: "",
+      cost: 0,
     },
     defaultItem: {
       name: "",
-      email: "",
+      contact: "",
       address: "",
       date: "",
       time: "",
+      cost: 0,
     },
     loader: false,
   }),
@@ -177,7 +170,7 @@ export default {
 
       let payload = this.editedItem; //@click add customer
       axios
-        .post("/registered/add_home_and_office_cleaning", payload)
+        .post("/guest/add_home_and_office_cleaning", payload)
         .then(async (res) => {
           if (res.data.success) {
             await this.getguestClients();
@@ -194,13 +187,14 @@ export default {
     getguestClients() {
       this.loader = true;
       axios
-        .get("/registered/get_activities")
+        .get("/guest/get_activities")
         .then((res) => {
           this.guestClients = res.data.reverse();
           this.loader = false;
           this.close();
         })
         .catch((err) => {
+          this.loader = false;
           console.log(err);
         });
     },
@@ -221,7 +215,7 @@ export default {
     deleteItemConfirm() {
       this.loader = true;
       axios
-        .delete(`/registered/delete_activity/${this.editedItem._id}`)
+        .delete(`/guest/delete_activity/${this.editedItem._id}`)
         .then((res) => {
           if (res.data.success) {
             this.getguestClients();
