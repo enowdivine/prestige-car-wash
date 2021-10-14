@@ -212,7 +212,7 @@ export default {
       { text: "Car Type", value: "carType" },
       { text: "Color", value: "color" },
       { text: "Service", value: "service" },
-      { text: "Remark", value: "remark" },
+      { text: "Payment Method", value: "remark" },
       { text: "Amount", value: "cost" },
       { text: "Count", value: "count" },
       { text: "Date", value: "date" },

@@ -55,7 +55,7 @@
             >
           </v-container>
           <v-container v-if="forgot && !reset">
-            <Forgotpassword @reset="reset = true" @know="forgot = false" />
+            <Forgotpassword @ @reset="reset = true" @know="forgot = false" />
           </v-container>
           <v-container v-if="forgot && reset">
             <ResetPassword class="resetpassword" />
