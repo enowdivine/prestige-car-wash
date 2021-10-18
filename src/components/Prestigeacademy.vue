@@ -106,8 +106,17 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-        <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+        <v-icon
+          small
+          class="mr-2"
+          @click="editItem(item)"
+          color="rgb(109, 199, 109)"
+        >
+          mdi-pencil
+        </v-icon>
+        <v-icon small @click="deleteItem(item)" color="red">
+          mdi-delete
+        </v-icon>
       </template>
       <template v-slot:no-data>
         <p>No data to show</p>

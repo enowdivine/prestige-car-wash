@@ -157,6 +157,16 @@
         <v-dialog v-model="dialogMsg" max-width="500px">
           <v-card>
             <v-card-title class="text-h5">Send Message To Client</v-card-title>
+            <v-form>
+              <v-container>
+                <v-textarea
+                  class="message"
+                  outlined
+                  v-model="BMessage"
+                  placeholder="Enter Message"
+                ></v-textarea>
+              </v-container>
+            </v-form>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="rgb(109, 199, 109)" text @click="closedialogMsg"
@@ -167,7 +177,7 @@
                 text
                 :loading="load"
                 @click="sendMsg"
-                >OK</v-btn
+                >Send</v-btn
               >
               <v-spacer></v-spacer>
             </v-card-actions>
@@ -176,11 +186,17 @@
       </v-toolbar>
     </template>
 
+    <template v-slot:[`item.count`]="{ item }">
+      <v-chip :color="getColor(item.count)" dark>
+        {{ item.count }}
+      </v-chip>
+    </template>
+
     <template v-slot:[`item.actions`]="{ item }">
       <v-icon small @click="openMsg(item)" color="rgb(109, 199, 109)">
         mdi-email
       </v-icon>
-      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+      <v-icon small @click="deleteItem(item)" color="red"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
       <p>No Data To Show</p>
@@ -200,6 +216,7 @@ export default {
     services: [],
     search: "",
     dialogMsg: false,
+    BMessage: "",
     dialog: false,
     dialogDelete: false,
     headers: [
@@ -371,8 +388,9 @@ export default {
     sendMsg() {
       this.load = true;
       axios
-        .post("/guest/email_client")
+        .post(`/guest/email_client/${this.editedItem._id}`, this.BMessage)
         .then((res) => {
+          console.log(res.data);
           if (res.data.success) {
             alert("Message sent succesfully");
             this.load = false;
@@ -383,6 +401,11 @@ export default {
           alert("Something went wrong");
           console.log(err);
         });
+    },
+
+    getColor(count) {
+      if (count < 10) return "red";
+      else return "green";
     },
 
     close() {
@@ -403,3 +426,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.message {
+  padding: 20px;
+}
+</style>

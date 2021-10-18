@@ -5,7 +5,7 @@
       label="Email"
       color="rgb(109, 199, 109)"
       type="email"
-      v-model="infoData.email"
+      v-model="email"
       outlined
     ></v-text-field>
     <v-btn
@@ -33,20 +33,20 @@ axios.defaults.headers.common["Authorization"] =
 
 export default {
   data: () => ({
-    infoData: {
-      email: "",
-    },
+    email: "",
+
     load: null,
   }),
   methods: {
     reset() {
       this.load = true;
-      let payload = this.editedItem; //@click reset password
-      axios.post("/auth/recoverPasword", payload).then(async (res) => {
+      let payload = this.email; //@click reset password
+      axios.post("/auth/recoverPasword", payload).then((res) => {
         if (res.data.success) {
-          this.loader = false;
+          this.load = false;
           this.$emit("reset");
         } else {
+          alert("failed attemp");
           this.load = false;
           this.msg = "Unidentified Email";
         }

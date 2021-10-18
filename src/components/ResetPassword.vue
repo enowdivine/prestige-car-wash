@@ -1,11 +1,16 @@
 <template>
   <span>
     <h2>Reset Password</h2>
-    <v-textarea outlined name="input-7-4" label="Token"></v-textarea>
+    <v-textarea
+      v-model="infoData.token"
+      outlined
+      name="input-7-4"
+      label="Token"
+    ></v-textarea>
 
     <v-text-field
       color="rgb(109, 199, 109)"
-      v-model="password"
+      v-model="infoData.password"
       :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
       :rules="[rules.required, rules.min]"
       :type="show1 ? 'text' : 'password'"
@@ -30,12 +35,21 @@
       @click:append="show1 = !show1"
       outlined
     ></v-text-field>
-    <v-btn color="rgb(109, 199, 109)" depressed dark block>Submit</v-btn>
+    <v-btn
+      color="rgb(109, 199, 109)"
+      @click="submit"
+      :loading="load"
+      depressed
+      dark
+      block
+      >Submit</v-btn
+    >
     <br />
   </span>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
@@ -55,9 +69,35 @@ export default {
         },
         emailMatch: () => `The email and password you entered don't match`,
       },
+      infoData: {
+        token: "",
+        password: "",
+      },
+      confirmPassword: "",
+      load: false,
     };
   },
-  methods: {},
+  methods: {
+    submit() {
+      if (this.password != this.confirmPassword) {
+        alert("Passwords do not match");
+      } else {
+        this.load = true;
+        axios
+          .post("/auth/reset_pass", this.infoData)
+          .then((res) => {
+            if (res.data.succes) {
+              this.load = false;
+              this.$router.push("/dashboard");
+            }
+          })
+          .catch((err) => {
+            this.load = false;
+            console.log(err);
+          });
+      }
+    },
+  },
 };
 </script>
 
