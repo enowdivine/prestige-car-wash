@@ -111,12 +111,7 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon
-          small
-          class="mr-2"
-          @click="editItem(item)"
-          color="rgb(109, 199, 109)"
-        >
+        <v-icon small @click="editItem(item)" color="rgb(109, 199, 109)">
           mdi-pencil
         </v-icon>
         <v-icon small @click="deleteItem(item)" color="red">
@@ -139,6 +134,7 @@ export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+
     action: "add", // add functionality for adding customers
     headers: [
       {

@@ -108,6 +108,66 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <v-dialog v-model="printDoc" max-width="500px">
+          <v-card id="printMe">
+            <h3>PRESTIGE CAR WASH</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th class="head">CASH RECEIPT</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="keys">NAME:</td>
+                  <td class="values">{{ editedItem.name }}</td>
+                </tr>
+                <tr>
+                  <td class="keys">CONTACT:</td>
+                  <td class="values">{{ editedItem.contact }}</td>
+                </tr>
+                <tr>
+                  <td class="keys">ADDRESS:</td>
+                  <td class="values">{{ editedItem.address }}</td>
+                </tr>
+                <tr>
+                  <td class="keys">GENDER:</td>
+                  <td class="values">{{ editedItem.gender }}</td>
+                </tr>
+                <tr>
+                  <td class="keys">SERVICE:</td>
+                  <td class="values">{{ editedItem.service }}</td>
+                </tr>
+
+                <tr>
+                  <td class="keys">CAR NUMBER:</td>
+                  <td class="values">{{ editedItem.car_number }}</td>
+                </tr>
+                <tr>
+                  <td class="keys">CAR TYPE:</td>
+                  <td class="values">{{ editedItem.car_type }}</td>
+                </tr>
+                <tr>
+                  <td class="keys">DATE:</td>
+                  <td class="values">{{ editedItem.date }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="rgb(109, 199, 109)"
+                text
+                @click="print"
+                :loading="loader"
+                >PRINT</v-btn
+              >
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
@@ -132,6 +192,17 @@
       </v-toolbar>
     </template>
 
+    <template v-slot:[`item.actions`]="{ item }">
+      <v-icon
+        small
+        class="mr-2"
+        @click="printReceipt(item)"
+        color="rgb(109, 199, 109)"
+      >
+        mdi-printer
+      </v-icon>
+    </template>
+
     <template v-slot:no-data>
       <p>No data to show</p>
     </template>
@@ -154,6 +225,8 @@ export default {
     action: "add", // add functionality for adding customers
     dialog: false,
     dialogDelete: false,
+    printDoc: false,
+    output: null,
     headers: [
       {
         text: "Name",
@@ -169,6 +242,7 @@ export default {
       { text: "Car Type", value: "car_type", sortable: false },
       { text: "Gender", value: "gender", sortable: false },
       { text: "Date", value: "date", sortable: false },
+      { text: "Actions", value: "actions", sortable: false },
     ],
     guestclients: [],
     editedIndex: -1,
@@ -301,6 +375,18 @@ export default {
       this.closeDelete();
     },
 
+    // print receipt
+    printReceipt(item) {
+      this.editedIndex = this.guestclients.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.printDoc = true;
+    },
+
+    print() {
+      // Pass the element id here
+      this.$htmlToPaper("printMe");
+    },
+
     close() {
       this.dialog = false;
       this.$nextTick(() => {
@@ -324,5 +410,25 @@ export default {
 .v-data-table {
   margin-bottom: 30px;
   margin-left: 30px;
+}
+#printMe {
+  padding: 30px;
+}
+td,
+th,
+tr,
+table {
+  text-align: left;
+  border-top: 1px solid black;
+  border-collapse: collapse;
+}
+
+td.values,
+th.head {
+  padding: 5px;
+}
+
+td.keys {
+  font-weight: bold;
 }
 </style>
