@@ -423,6 +423,11 @@ table {
   border-collapse: collapse;
 }
 
+table{
+  width: 100%;
+  margin-top: 20px;
+}
+
 td.values,
 th.head {
   padding: 5px;

@@ -376,12 +376,11 @@ export default {
 .board {
   width: 100%;
   height: 100%;
-  padding-top: 20px;
+
   background-color: whitesmoke;
 }
 .v-data-table {
   margin-bottom: 30px;
-  margin-left: 30px;
 }
 #printMe {
   padding: 30px;
@@ -393,6 +392,11 @@ table {
   text-align: left;
   border-top: 1px solid black;
   border-collapse: collapse;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
 }
 
 td.values,

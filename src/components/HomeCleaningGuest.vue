@@ -335,7 +335,7 @@ export default {
 .board {
   width: 100%;
   height: 100%;
-  padding: 40px;
+  
   background-color: whitesmoke;
 }
 .v-data-table {
@@ -355,6 +355,11 @@ table {
   text-align: left;
   border-top: 1px solid black;
   border-collapse: collapse;
+}
+
+table{
+  width: 100%;
+  margin-top: 20px;
 }
 
 td.values,
